@@ -106,6 +106,157 @@
 
 ## vue-router
 
+### 基本使用
+
+```html
+<div id="app">
+  <!-- 使用 router-link 组件来导航. -->
+  <!-- 通过传入 `to` 属性指定链接. -->
+  <!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
+  <router-link to="/foo">Go to Foo</router-link>
+  <router-link to="/bar">Go to Bar</router-link>
+
+  <!-- 路由出口 -->
+  <!-- 路由匹配到的组件将渲染在这里 -->
+  <router-view></router-view>
+</div>
+
+<script>
+  // import vue-rout、vue
+  // import component foo、bar
+  export new VueRouter({
+    routes: [
+      {
+        path: '/foo',
+        component: Foo
+      },
+      {
+        path: '/bar',
+        component: Bar
+      }
+    ]
+  })
+</script>
+```
+
+### 动态路由匹配
+
+> 如同/user/:id，/user/akara 和/user/messiah 都可以匹配到这个路由
+
+```js
+const User = {
+  template: '<div>User {{ $route.params.id }}</div>',
+}
+
+const router = new VueRouter({
+  routes: [
+    // 动态路径参数 以冒号开头
+    { path: '/user/:id', component: User },
+  ],
+})
+```
+
+### 嵌套路由
+
+> 简单来说就是 router-view 里面还有 router-view
+
+```js
+const User = {
+  template: `
+    <div class="user">
+      <h2>User {{ $route.params.id }}</h2>
+      <router-view></router-view>
+    </div>
+  `,
+}
+const router = new VueRouter({
+  routes: [
+    {
+      path: '/user/:id',
+      component: User,
+      children: [
+        {
+          // 当 /user/:id/profile 匹配成功，
+          // UserProfile 会被渲染在 User 的 <router-view> 中
+          path: 'profile',
+          component: UserProfile,
+        },
+        {
+          // 当 /user/:id/posts 匹配成功
+          // UserPosts 会被渲染在 User 的 <router-view> 中
+          path: 'posts',
+          component: UserPosts,
+        },
+      ],
+    },
+  ],
+})
+```
+
+### 路由导航
+
+`router-link`提供了声明式导航，我们也可以使用`this.$router.push`进行函数式导航
+
+```js
+// 字符串
+router.push('home')
+
+// 对象
+router.push({ path: 'home' })
+
+// 命名的路由
+router.push({ name: 'user', params: { userId: '123' } })
+
+// 带查询参数，变成 /register?plan=private
+router.push({ path: 'register', query: { plan: 'private' } })
+```
+
+### hash 模式和 history 模式
+
+Hash 模式的 Url 结构类似：https://example.com/#user/akara
+
+History 模式的 Url 结构类似：https://example.com/user/akara
+
+无论哪种模式，本质都是使用的 history.pushState，每次 pushState 后，会在浏览器的浏览记录中添加一个新的记录，但是并不会触发页面刷新，也不会请求新的数据。
+
+```js
+// 使用history模式
+const router = new VueRouter({
+  mode: 'history',
+  routes: [...]
+})
+```
+
+不过使用 History 模式需要后端进行配置，如果不配置，当用户访问 https://example.com/user/akara的时候会返回404。
+所以我们需要设置当URL匹配不到任何资源的时候，同返回同一个index.html。
+
+### 导航守卫
+
+### $router和$route
+
+- $router
+	<!--导航守卫-->
+	1. router.beforeEach
+	2. router.beforeResolve
+	3. router.afterEach
+	<!--编程式路由导航-->
+	1. router.push
+	2. router.replace
+	3. router.go
+	4. router.back
+	5. router.forward
+
+- $route
+	1. $route.path，字符串，对应当前路由的路径，总是解析为绝对路径，如 "/foo/bar"。
+	2. $route.params，一个 key/value 对象，包含了动态片段和全匹配片段，如果没有路由参数，就是一个空对象。
+	3.$route.query，一个 key/value 对象，表示 URL 查询参数。例如，对于路径 /foo?user=1，则有 $route.query.user == 1，如果没有查询参数，则是个空对象。
+	4. $route.hash，当前路由的 hash 值 (带 #) ，如果没有 hash 值，则为空字符串。
+	5. $route.fullPath，完成解析后的 URL，包含查询参数和 hash 的完整路径。
+	6. $route.name，当前路由的名称，如果有的话。
+
+
+
+
 ## vue 生命周期
 
 ![](C:\Users\姜嘿嘿\Desktop\vue生命周期.png)
