@@ -51,7 +51,7 @@
 - store
 - router
 
-## computed、methods、watcher区别
+## computed、methods、watcher 区别
 
 ### computed vs methods
 
@@ -59,9 +59,52 @@
 
 ### computed vs watcher
 
-1. Computed本质是一个具备缓存的watcher，依赖的属性发生变化就会更新视图。适用于计算比较消耗性能的计算场景。当表达式过于复杂时，在模板中放入过多逻辑会让模板难以维护，可以将复杂的逻辑放入计算属性中处理。
+1. Computed 本质是一个具备缓存的 watcher，依赖的属性发生变化就会更新视图。适用于计算比较消耗性能的计算场景。当表达式过于复杂时，在模板中放入过多逻辑会让模板难以维护，可以将复杂的逻辑放入计算属性中处理。
 
-2. Watch没有缓存性，更多的是观察的作用，可以监听某些数据执行回调。当我们需要深度监听对象中的属性时，可以打开deep：true选项，这样便会对对象中的每一项进行监听。这样会带来性能问题，优化的话可以使用字符串形式监听，如果没有写到组件中，不要忘记使用unWatch手动注销哦。
+2. Watch 没有缓存性，更多的是观察的作用，可以监听某些数据执行回调。当我们需要深度监听对象中的属性时，可以打开 deep：true 选项，这样便会对对象中的每一项进行监听。这样会带来性能问题，优化的话可以使用字符串形式监听，如果没有写到组件中，不要忘记使用 unWatch 手动注销哦。
+
+## 组件间通信
+
+### 父子组件通信
+
+- 父->子 `props`
+
+  1. 在子标签上注册自定义 attribute，当一个值传递给 prop attribute 时，就会变成子组件 vue 实例的一个属性
+
+  2. 在子组件中声明接收属性
+
+```html
+<!-- parent vue -->
+<div>
+  <son :number="numbers"></son>
+</div>
+
+<script>
+  export default {
+    data() {
+      return {
+        numbers: [1, 2, 3],
+      }
+    },
+  }
+</script>
+
+<!-- son vue -->
+<script>
+  export default {
+    props: ['numbers'],
+  }
+</script>
+```
+
+- 子->父 `$on、$emit`
+
+  1. 父组件对子组件的自定义事件使用 v-on:eventName=doSomething 进行监听
+  2. 当子组件内部触发了该自定义事件时（使用\$emit('eventName')），父组件执行 doSomething，从而实现子组件向父组件的通信
+
+- 获取父子组件实例`$parent、$children`
+
+## vue-router
 
 ## vue 生命周期
 
