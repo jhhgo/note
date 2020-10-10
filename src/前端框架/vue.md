@@ -228,34 +228,80 @@ const router = new VueRouter({
 ```
 
 不过使用 History 模式需要后端进行配置，如果不配置，当用户访问 https://example.com/user/akara的时候会返回404。
-所以我们需要设置当URL匹配不到任何资源的时候，同返回同一个index.html。
+所以我们需要设置当 URL 匹配不到任何资源的时候，同返回同一个 index.html。
 
 ### 导航守卫
 
 ### $router和$route
 
-- $router
-	<!--导航守卫-->
-	1. router.beforeEach
-	2. router.beforeResolve
-	3. router.afterEach
-	<!--编程式路由导航-->
-	1. router.push
-	2. router.replace
-	3. router.go
-	4. router.back
-	5. router.forward
+- \$router
+  <!--导航守卫-->
 
-- $route
-	1. $route.path，字符串，对应当前路由的路径，总是解析为绝对路径，如 "/foo/bar"。
-	2. $route.params，一个 key/value 对象，包含了动态片段和全匹配片段，如果没有路由参数，就是一个空对象。
-	3.$route.query，一个 key/value 对象，表示 URL 查询参数。例如，对于路径 /foo?user=1，则有 $route.query.user == 1，如果没有查询参数，则是个空对象。
-	4. $route.hash，当前路由的 hash 值 (带 #) ，如果没有 hash 值，则为空字符串。
-	5. $route.fullPath，完成解析后的 URL，包含查询参数和 hash 的完整路径。
-	6. $route.name，当前路由的名称，如果有的话。
+  1.  router.beforeEach
+  2.  router.beforeResolve
+  3.  router.afterEach
+  <!--编程式路由导航-->
+  4.  router.push
+  5.  router.replace
+  6.  router.go
+  7.  router.back
+  8.  router.forward
 
+- \$route
+  1.  \$route.path，字符串，对应当前路由的路径，总是解析为绝对路径，如 "/foo/bar"。
+  2.  $route.params，一个 key/value 对象，包含了动态片段和全匹配片段，如果没有路由参数，就是一个空对象。
+	3.$route.query，一个 key/value 对象，表示 URL 查询参数。例如，对于路径 /foo?user=1，则有 \$route.query.user == 1，如果没有查询参数，则是个空对象。
+  3.  \$route.hash，当前路由的 hash 值 (带 #) ，如果没有 hash 值，则为空字符串。
+  4.  \$route.fullPath，完成解析后的 URL，包含查询参数和 hash 的完整路径。
+  5.  \$route.name，当前路由的名称，如果有的话。
 
+## vuex
 
+```js
+const store = new Vuex.Store({
+    state: {
+        count: 0
+    },
+
+    getters: {
+        countPlus: state => {
+            return state.count + 1
+        }
+    },
+
+    mutations: {
+        increment: (state, payload) => {
+            state.count += payload
+        }
+    }
+})
+new Vue({
+    el: '.app',
+    store,
+    computed: {
+        count: function() {
+            return this.$store.state.count
+        }
+    },
+    methods: {
+        increment: function() {
+            this.$store.commit('increment', 10)
+        }
+    },
+    template: `
+        <div>
+            {{ count }}
+            <button @click='increment'>点我</button>
+        </div>
+    `
+```
+
+### mutation 和 action
+
+mutaition 和 action 类似，不同在于：
+
+- action 提交的是 mutation，而不是直接变更状态
+- Action 可以包含任意异步操作，Mutation 只能包括同步操作
 
 ## vue 生命周期
 
