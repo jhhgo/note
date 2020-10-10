@@ -61,17 +61,15 @@ const tree = {
 1. 递归
 
 ```js
-function dfs(root, stack = [], res = []) {
+function dfs(root, res = []) {
   if (root === null) {
     return
   }
 
   for (let i = 0; i < root.children.length; i++) {
     let child = root.children[i]
-    stack.push(child)
     res.push(child.name)
     dfs(child, stack, res)
-    stack.pop()
   }
   return res
 }
