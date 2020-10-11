@@ -63,7 +63,7 @@ const tree = {
 ```js
 function dfs(root, res = []) {
   if (root === null) {
-    return
+    return []
   }
 
   for (let i = 0; i < root.children.length; i++) {
