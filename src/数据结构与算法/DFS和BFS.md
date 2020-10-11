@@ -83,7 +83,7 @@ function dfs(root) {
     return []
   }
   // 存储待访问的节点
-  let stack = []
+  let stack = [root]
   let res = []
   while (stack.length > 0) {
     let node = stack.pop()
