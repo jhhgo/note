@@ -140,21 +140,153 @@ module 配置 👇
 
 由于 loader 执行顺序，所以 less-loader 先执行，将 less 文件编译为 css 文件。之后和处理 css 文件的步骤一致
 
-### 配置postcss-loader
+### 配置 postcss-loader
 
-这个loader可以解决一些css兼容性问题，即产商前缀
+这个 loader 可以解决一些 css 兼容性问题，即产商前缀
 
 具体配置：[postcss-loader](https://www.webpackjs.com/loaders/postcss-loader/)
 
 **第一步：下载**👇
 
 ```js
-npm i postcss-loader postcss-preset-env -D
+npm i postcss-loader postcss autoprefixer -D
 ```
 
-postcss-preset-env可以帮助postcss找到package.json中browserlist的配置，通过配置加载指定css兼容性样式
+**第二步：创建 postcss.config.js**👇
 
+```js
+// postcss.config.js  和webpack.config.js在一个目录下
+module.exports = {
+  plugins: [
+    require('autoprefixer')({
+      overrideBrowserslist: [
+        'Android 4.1',
+        'iOS 7.1',
+        'Chrome > 31',
+        'ff > 31',
+        'ie >= 8',
+      ],
+    }),
+  ],
+}
+```
 
+**第三步：配置**👇
+
+```js
+{
+  test: /.\css$/,
+  use: ['style-loader', 'css-loader', 'postcss-loader']
+}
+```
+
+打包后的 css 文件加上了产商前缀 👇
+
+```css
+#box1 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+```
+
+### eslint-loader
+
+通过 ESLint 检查 JavaScript 代码
+
+**第一步：下载**👇
+
+```js
+npm i eslint eslint-loader -D
+```
+
+我们可以设置 eslint 语法检查的规则为 airbnb，github👉[airbnb](https://github.com/airbnb/javascript)
+
+同时我们需要下载以下几个包 👇
+
+```js
+npm i eslint-config-airbnb-base eslint-plugin-import -D
+```
+
+**第二步：配置**👇
+
+```js
+// package.json
+"eslintConfig": {
+  "extends": "airbnb-base"
+}
+```
+
+```js
+{
+  test: /.\js$/,
+  // 排除node_modules文件夹
+  exclude: /node_modules/,
+  loader: 'eslint-loader',
+  options: {
+  }
+}
+```
+
+### babel-loader
+
+处理 js 兼容性问题，es6 -> es5
+
+babel 官网 👉[babel-loader](https://www.babeljs.cn/)
+
+**下载**👇
+
+```js
+npm install --save-dev babel-loader @babel/core
+// @babel/core 是babel中的一个核心库
+npm install --save-dev @babel/preset-env
+// preset-env 这个模块就是将语法翻译成es5语法,这个模块包括了所有翻译成es5语法规则
+npm install --save @babel/polyfill
+// 将Promise,map等低版本中没有实现的语法,用polyfill来实现.
+```
+
+**配置**👇
+
+```js
+module: {
+  rules: [
+    {
+      test: /\.js$/,
+      exclude: /node_modules/,
+      loader: 'babel-loader',
+      options: {
+        presets: [
+          [
+            '@babel/preset-env',
+          ],
+        ],
+      },
+    },
+  ]
+}
+```
+
+- preset-env只能转化一些基本的es6语法，不能转化Promise、箭头函数等语法
+- 使用`@babel/polyfill`模块，对Promise、箭头函数等进行补充
+
+`@babel/polyfill`模块的使用👇
+
+```js
+// 在index.js直接引入即可
+import '@babel/polyfill'
+```
+
+`@babel/polyfill`默认会引入全部的兼容性解决方案。导致文件很大
+
+所以需要以下配置👇
+
+```js
+// 使用此配置后，只会兼容当前使用的es6语法而非兼容全部es6语法
+useBuiltIns: 'usage'
+```
 
 ## Plugins
 
@@ -197,7 +329,7 @@ module.exports = {
 
 ### mini-css-extract-plugin
 
-该插件用于将css从js中提取出来，形成单独的文件
+该插件用于将 css 从 js 中提取出来，形成单独的文件
 
 **第一步：下载**👇
 
@@ -214,17 +346,19 @@ npm i mini-css-extract-plugin
   use: [
     // 由于该插件把css提取成单独文件，所以不需要style-loader
     MiniCssExtractPlugin.loader,
-    'css-loader'
+    'css-loader',
   ]
 }
 
 //plugins
-plugins:[
-  new MiniCssExtractPlugin()
-]
+plugins: [new MiniCssExtractPlugin()]
 ```
 
-加入以上配置重新打包后，会生成一个css文件包含index.js依赖的所有css，同时html会自动引入该css文件
+加入以上配置重新打包后，会生成一个 css 文件包含 index.js 依赖的所有 css，同时 html 会自动引入该 css 文件
+
+### OptimizeCssAssetsWebpackPlugin
+
+该插件用于压缩 css
 
 ## webpack-dev-server
 
