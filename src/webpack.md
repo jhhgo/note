@@ -435,4 +435,22 @@ devServer: {
 
 ## 开发环境优化
 
+### HMR
+
+> 模块热替换(HMR - Hot Module Replacement)功能会在应用程序运行过程中替换、添加或删除模块，而无需重新加载整个页面。它允许在运行时更新各种模块，而无需进行完全刷新。
+
+具体配置👉[HMR](https://www.webpackjs.com/guides/hot-module-replacement/)
+
+### source-map
+
+source-map是一种提供源代码到构建后代码的映射的技术。比如构建后的代码出错了，可以通过映射关系追踪到源代码错误。
+
+具体配置👉[source-map](https://www.webpackjs.com/configuration/devtool/)
+
+推荐配置👇
+
+```js
+devtool: 'cheap-module-eval-source-map'
+```
+
 ## 生产环境优化
