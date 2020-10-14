@@ -175,7 +175,7 @@ module.exports = {
 
 ```js
 {
-  test: /.\css$/,
+  test: /\.css$/,
   use: ['style-loader', 'css-loader', 'postcss-loader']
 }
 ```
@@ -222,11 +222,13 @@ npm i eslint-config-airbnb-base eslint-plugin-import -D
 
 ```js
 {
-  test: /.\js$/,
+  test: /\.js$/,
   // 排除node_modules文件夹
   exclude: /node_modules/,
   loader: 'eslint-loader',
   options: {
+    // 自动修复
+    fix: true
   }
 }
 ```
@@ -234,6 +236,8 @@ npm i eslint-config-airbnb-base eslint-plugin-import -D
 ### babel-loader
 
 处理 js 兼容性问题，es6 -> es5
+
+webpack官网配置👉[babel-loader](https://www.webpackjs.com/loaders/babel-loader/)
 
 babel 官网 👉[babel-loader](https://www.babeljs.cn/)
 
@@ -258,21 +262,17 @@ module: {
       exclude: /node_modules/,
       loader: 'babel-loader',
       options: {
-        presets: [
-          [
-            '@babel/preset-env',
-          ],
-        ],
+        presets: [['@babel/preset-env']],
       },
     },
   ]
 }
 ```
 
-- preset-env只能转化一些基本的es6语法，不能转化Promise、箭头函数等语法
-- 使用`@babel/polyfill`模块，对Promise、箭头函数等进行补充
+- preset-env 只能转化一些基本的 es6 语法，不能转化 Promise、箭头函数等语法
+- 使用`@babel/polyfill`模块，对 Promise、箭头函数等进行补充
 
-`@babel/polyfill`模块的使用👇
+`@babel/polyfill`模块的使用 👇
 
 ```js
 // 在index.js直接引入即可
@@ -281,11 +281,34 @@ import '@babel/polyfill'
 
 `@babel/polyfill`默认会引入全部的兼容性解决方案。导致文件很大
 
-所以需要以下配置👇
+所以需要以下配置 👇
 
 ```js
 // 使用此配置后，只会兼容当前使用的es6语法而非兼容全部es6语法
 useBuiltIns: 'usage'
+```
+
+当js同时被`eslint-loader`和`babel-loader`处理时，要先执行`eslint`再执行`babel`。首先对js进行eslint检查，然后再进行es6->es5转换。
+
+```js
+// eslint-loader
+{
+  test: /\.js$/,
+  exclude: /node_modules/,
+  // 优先执行此loader，无论顺序先后
+  enforce: 'pre',
+  loader: 'eslint-loader',
+  options: {
+    fix: true
+  }
+},
+// babel-loader
+{
+  test: /\.js$/,
+  exclude: /node_modules/,
+  loader: 'babel-loader'
+  // ...
+}
 ```
 
 ## Plugins
@@ -327,6 +350,20 @@ module.exports = {
 
 `template: './src/index.html'`告诉插件以哪个文件为模板
 
+如果需要压缩 html 加入以下配置 👇
+
+```js
+new HtmlWebpackPlugin({
+  template: './src/index.html',
+  minify: {
+    // 移除空格
+    collapseWhitespace: true,
+    // 移除评论
+    removeComments: true
+  }
+  }),
+```
+
 ### mini-css-extract-plugin
 
 该插件用于将 css 从 js 中提取出来，形成单独的文件
@@ -342,7 +379,7 @@ npm i mini-css-extract-plugin
 ```js
 // module
 {
-  test: /.\css$/
+  test: /\.css$/
   use: [
     // 由于该插件把css提取成单独文件，所以不需要style-loader
     MiniCssExtractPlugin.loader,
@@ -388,3 +425,14 @@ devServer: {
 ```
 
 ## Mode
+
+## webpack性能优化
+
+- 开发环境
+  1. 优化打包构建速度
+  2. 优化代码调试
+- 生产环境
+
+## 开发环境优化
+
+## 生产环境优化
