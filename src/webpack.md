@@ -453,4 +453,52 @@ source-map是一种提供源代码到构建后代码的映射的技术。比如�
 devtool: 'cheap-module-eval-source-map'
 ```
 
+### 构建缓存
+
+利用`babel-loader`的`cacheDirectory`选项，缓存loader的执行结果，避免在每次执行构建时，可能产生的、高性能消耗的babel重新编译过程
+
+> cacheDirectory：默认值为 false。当有设置时，指定的目录将用来缓存 loader 的执行结果。之后的 webpack 构建，将会尝试读取缓存，来避免在每次执行时，可能产生的、高性能消耗的 Babel 重新编译过程(recompilation process)。如果设置了一个空值 (loader: 'babel-loader?cacheDirectory') 或者 true (loader: babel-loader?cacheDirectory=true)，loader 将使用默认的缓存目录 node_modules/.cache/babel-loader，如果在任何根目录下都没有找到 node_modules 目录，将会降级回退到操作系统默认的临时文件目录。
+
+```js
+{
+  test: /\.js$/,
+  loader: 'babel-loader',
+  options: {
+    cacheDirectory: true
+  }
+}
+```
+
 ## 生产环境优化
+
+### contenthash浏览器缓存
+
+考虑一个需求，当一个项目上线时，你修改了部分文件，你希望浏览器仅请求被修改的文件，对于没有修改的文件可以去缓存中读取。此时就需要用到`contenthash`
+
+webpack中的三种hash👇
+
+**hash**
+
+hash，主要用于开发环境中，在构建的过程中，当你的项目有一个文件发现了改变，整个项目的hash值就会做修改(整个项目的hash值是一样的)，这样子，每次更新，文件都不会让浏览器缓存文件，保证了文件的更新率，提高开发效率。
+
+**chunkhash**
+
+它根据不同的入口文件(Entry)进行依赖文件解析、构建对应的chunk，生成对应的hash值。我们在生产环境里把一些公共库和程序入口文件区分开，单独打包构建，即一个入口代表一个chunk。接着我们采用chunkhash的方式生成hash值，那么只要我们不改动公共库的代码，就可以保证其hash值不会受影响。
+
+但是这个中hash的方法其实是存在问题的，生产环境中我们会用webpack的插件，将css代码打单独提取出来打包。这时候chunkhash的方式就不够灵活，因为只要同一个chunk里面的js修改后，css的chunk的hash也会跟随着改动。因此我们需要contenthash。
+
+**contenthash**
+
+contenthash表示由文件内容产生的hash值，内容不同产生的contenthash值也不一样。在项目中，通常做法是把项目中css都抽离出对应的css文件来加以引用。
+
+生产环境配置👇
+
+```js
+output: {
+  filename: '[name].[contenthash].js',
+  chunkFilename: '[vendors].[contenthash].js',
+  path: path.join(__dirname, 'dist')
+}
+```
+
+对于开发环境，将`contenthash`改为`hash`即可。这样可以提高开发效率。
