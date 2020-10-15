@@ -616,3 +616,30 @@ document.getElementById('btn').onclick = function() {
   })
 }
 ```
+
+### externals
+
+externals用于防止将某些 import 的包(package)打包到 bundle 中，而是在运行时(runtime)再去从外
+部获取这些扩展依赖（CDN）。
+
+具体配置👉[externals](https://www.webpackjs.com/configuration/externals/)
+
+例如，从CDN引入jquer，而不是将其打包
+
+```html
+<!-- index.html -->
+<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+```
+
+```js
+// wbepack.config.js
+externals: {
+  jquery: 'jQuery'
+}
+```
+
+```js
+// index.js
+import $ from 'jquery'
+console.log($)
+```
