@@ -502,3 +502,33 @@ output: {
 ```
 
 对于开发环境，将`contenthash`改为`hash`即可。这样可以提高开发效率。
+
+### tree shaking
+
+在 webpack 项目中，有一个入口文件，相当于一棵树的主干，入口文件有很多依赖的模块，相当于树枝。实际情况中，虽然依赖了某个模块，但其实只使用其中的某些功能。通过 tree-shaking，将没有使用的模块摇掉，这样来达到删除无用代码的目的。
+
+如何开启 tree shaking?
+
+- 使用es6模块化(import export)
+- 将`mode`改为`production`
+
+将文件标记为无副作用(side-effect-free)
+
+```js
+{
+  // 表示，所有代码都没有副作用（都可以进行tree shaking）
+  "sideEffects": false
+}
+```
+
+此时，如果import了css文件，webpack会认为css是无用代码，从而删除css文件
+
+所以我们需要将css添加到sideEffects中，避免webpack无意地将其删除
+
+```js
+{
+  "sideEffects": [
+    "*.css"
+  ]
+}
+```
