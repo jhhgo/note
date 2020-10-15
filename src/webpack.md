@@ -597,3 +597,22 @@ function count(x, y) {
   return x - y
 }
 ```
+
+同时该语法还可以实现**懒加载**、**预加载**功能
+
+在一个js文件中，引入了另外一个js文件。但是还没有用到另外一个文件中的方法，此时浏览器仍会先请求另一个js文件。
+
+懒加载：在用到另一个文件中的方法时，才去请求该js文件
+
+预加载：同样也是在使用前请求js文件。但是不会阻塞其他资源的请求，会在空闲时间，偷偷请求js文件
+
+```js
+// index.js
+// 将import语法放到异步函数中，用到的时候才加载
+// webpackPrefetch: true，开启预加载
+document.getElementById('btn').onclick = function() {
+  import(/*webpackPrefetch: true*/'.test').then({add} => {
+    add(1, 2)
+  })
+}
+```
