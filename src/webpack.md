@@ -33,7 +33,42 @@ module.exports = {
 
 ## Entry
 
+webpack打包的入口。
+
+具体配置👉[entry](https://www.webpackjs.com/configuration/entry-context/)
+
+entry支持设置单入口和多入口
+
+```js
+// 单入口，字符串。chunk名为main
+entry: './src/index.js'
+// 多入口，字符串数组。只生成一个bundle，chunk名为main
+entry: ['./src/index.js', './src/test.js']
+// 多入口，对象。有一个入口就生成几个bundle，chunk名为key值
+entry: {
+  index: './src/index.js',
+  test: './src/test.js'
+}
+```
+
 ## Output
+
+output 位于对象最顶级键(key)，包括了一组选项，指示 webpack 如何去输出、以及在哪里输出你的「bundle、asset 和其他你所打包或使用 webpack 载入的任何内容」。
+
+具体配置👉[output](https://www.webpackjs.com/configuration/output/)
+
+```js
+output: {
+  // 文件名称（目录+指定名称）
+  filename: 'js/[name].js',
+  // 输出文件的目录（将来所有资源输出的公共目录）
+  path: path.join(__dirname, 'dist'),
+  // 引入资源的公共路径前缀
+  publicPath: '/',
+  // 非入口chunk的名称
+  chunkFilename: '[name]_chunk.js'
+}
+```
 
 ## Loader
 
@@ -441,7 +476,7 @@ devServer: {
 
 具体配置 👉[HMR](https://www.webpackjs.com/guides/hot-module-replacement/)
 
-### source-map
+### source-map优化代码调试
 
 source-map 是一种提供源代码到构建后代码的映射的技术。比如构建后的代码出错了，可以通过映射关系追踪到源代码错误。
 
