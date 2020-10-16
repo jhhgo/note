@@ -496,7 +496,7 @@ var restoreIpAddresses = function (s) {
 输出: 3
 ```
 
-> 思路：遍历二维数组，如果当前item为1，则以当前item开始深度遍历，遍历当前item的上下左右，同时每开始一次dfs意味着岛屿数量+1。dfs：递归出口：数组越界或当前item为0，则跳出循环。
+> 思路：遍历二维数组，如果当前 item 为 1，则以当前 item 开始深度遍历，遍历当前 item 的上下左右，同时每开始一次 dfs 意味着岛屿数量+1。dfs：递归出口：数组越界或当前 item 为 0，则跳出循环
 
 ```js
 var numIslands = function (grid) {
@@ -528,5 +528,50 @@ var numIslands = function (grid) {
     }
   }
   return count
+}
+```
+
+### 矩阵中的路径
+
+[leetcode](https://leetcode-cn.com/problems/ju-zhen-zhong-de-lu-jing-lcof/)
+
+**思路：**
+
+主要的思路是 dfs。首先遍历二维数组，如果某个 item 等于 word[0]，则从这个 item 开始深度优先遍历。由于要遍历 item 的上下左右，所以递归出口是数组越界或者当前遍历的 item 的值不等于 word[index]。
+
+```js
+var exist = function (board, word) {
+  let row = board.length
+  let col = board[0].length
+  let dfs = (i, j, index) => {
+    // 递归出口同时是筛选条件
+    if (i < 0 || i >= row || j < 0 || j >= col || board[i][j] !== word[index]) {
+      return false
+    }
+    if (index === word.length - 1) {
+      return true
+    }
+    let tmp = board[i][j]
+    // 标记已访问过的节点，避免无限循环
+    board[i][j] = '-'
+    let res =
+      dfs(i - 1, j, index + 1) ||
+      dfs(i + 1, j, index + 1) ||
+      dfs(i, j - 1, index + 1) ||
+      dfs(i, j + 1, index + 1)
+    // 遍历后重置该节点
+    board[i][j] = tmp
+    return res
+  }
+  for (let i = 0; i < row; i++) {
+    for (let j = 0; j < col; j++) {
+      if (board[i][j] === word[0]) {
+        if (dfs(i, j, 0)) {
+          return true
+        }
+      }
+    }
+  }
+  return false
 }
 ```
