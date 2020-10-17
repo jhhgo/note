@@ -178,7 +178,7 @@ function ActionLink() {
 
 **事件处理函数：**
 
-当使用es6 class语法定义一个组件时，通常将事件处理函数声明为class中的方法
+当使用 es6 class 语法定义一个组件时，通常将事件处理函数声明为 class 中的方法
 
 同时为了在回调函数中使用`this`必须通过`bind`绑定`this`
 
@@ -202,14 +202,14 @@ class MyComponent extends React.Component {
 
 **向事件处理函数传递参数：**
 
-不能直接向事件处理函数传递参数👇
+不能直接向事件处理函数传递参数 👇
 
 ```js
 // 错误的
 <button onClick={this.handleClick(arg)}></button>
 ```
 
-react中向事件处理函数传递参数的方法有两种:
+react 中向事件处理函数传递参数的方法有两种:
 
 - 匿名函数
 - `bind`
@@ -220,4 +220,76 @@ react中向事件处理函数传递参数的方法有两种:
 
 // bind
 <button onClick={this.handleClick.bind(this, id)}></button>
+```
+
+### 组件生命周期
+
+[组件生命周期](https://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/)
+
+**挂载：**
+
+- constructor()
+- static getDerivedStateFromProps()
+- render()
+- componetDidMount()
+
+**更新：**
+
+- static getDerivedStateFromProps()
+- shouldComponentUpdate()
+- render()
+- getSnapshotBeforeUpdate()
+- componetDidUpdate()
+
+**卸载：**
+
+- componentWillUnmount()
+
+下面是一个 clock 例子 👇
+
+```js
+<script type="text/babel">
+    class Clock extends React.Component {
+      constructor(props) {
+        super(props)
+        this.state = {
+          data: new Date()
+        }
+        this.tick = this.tick.bind(this)
+      }
+      // 组件挂载后执行
+      componentDidMount(){
+        // 开启定时器
+        this.timer = setInterval(() => {
+          console.log('定时器执行...')
+          this.tick()
+        }, 1000)
+      }
+      // 组件卸载前执行
+      componentWillUnmount(){
+        // 在组件卸载前清除定时器，防止内存泄露
+        clearInterval(this.timer)
+      }
+      // 更新时间
+      tick() {
+        this.setState({
+          data: new Date()
+        })
+      }
+      deleteComponent() {
+        ReactDOM.unmountComponentAtNode(document.querySelector('#app'))
+      }
+      render() {
+        return (
+          <div>
+            <h1>hello react</h1>
+            <h2>当前时间 {this.state.data.toLocaleTimeString()}</h2>
+            <button onClick={this.deleteComponent}>删除组件</button>
+          </div>
+        )
+      }
+    }
+
+    ReactDOM.render(<Clock/>, document.querySelector('#app'))
+  </script>
 ```
