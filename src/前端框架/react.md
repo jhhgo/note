@@ -329,3 +329,61 @@ class NameForm extends React.Component {
   }
 }
 ```
+
+## 条件渲染
+
+使用 JavaScript 运算符 if 或者条件运算符去创建元素来表现当前的状态，然后让 React 根据它们来更新 UI
+
+```js
+// 根据登录状态渲染组件
+function UserGreeting(props) {
+  return <h1>Welcome back</h1>
+}
+function GuestGreeting(props) {
+  return <h1>Please sign up</h1>
+}
+function Greeting(props) {
+  if (isLoggedIn) {
+    return <UserGreeting />
+  }
+  return <GuestGreeting />
+}
+ReactDOM.render(
+  <Greeting isLoggedIn={false} />,
+  document.getElementById('root')
+)
+```
+
+### 与运算符&&
+
+```js
+function App(props) {
+  return <div>{props.count > 0 && <span>hello world</span>}</div>
+}
+```
+
+true && expression 总是会返回 expression, 而 false && expression 总是会返回 false。
+
+### 三目运算符
+
+```js
+render() {
+  const isLoggedIn = this.state.isLoggedIn;
+  return (
+    <div>
+      The user is <b>{isLoggedIn ? 'currently' : 'not'}</b> logged in.
+    </div>
+  );
+}
+```
+
+### 阻止组件渲染
+
+让`render`方法直接返回`null`，从而不进行任何渲染
+
+```js
+function App(props) {
+  if (props.flag) return null
+  // ...
+}
+```
