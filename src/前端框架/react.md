@@ -293,3 +293,39 @@ react 中向事件处理函数传递参数的方法有两种:
     ReactDOM.render(<Clock/>, document.querySelector('#app'))
   </script>
 ```
+
+## 表单
+
+### 受控组件
+
+通常，在 HTML 中表单元素自己维护 state。而在 React 中，可变状态通常保存在组件的 state 属性中，并且只能通过`setState()`更新（相当于被 React 劫持？）
+
+React 的 state 成为组件/表单的唯一数据源，渲染表单的组件还控制着用户输入过程中表单发生的操作。被 React 以这种方式控制取值的表单输入元素就叫做“受控组件”。当然，与之对应的成为“非受控组件”。
+
+```js
+// 受控组件
+class NameForm extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      value: '',
+    }
+  }
+  handleChange = (e) => {
+    this.setState({
+      value: e.target.value,
+    })
+  }
+  render() {
+    return (
+      <div>
+        <input
+          type="text"
+          value={this.state.value}
+          onChange={this.handleChange}
+        />
+      </div>
+    )
+  }
+}
+```
