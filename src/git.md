@@ -26,4 +26,10 @@ git checkout -- file
 
 // 把缓存区的修改回退到工作区
 git reset HEAD file
+
+// 添加远程库
+git remote add origin
+
+// 把本地库推送到远程
+git push
 ```
