@@ -450,3 +450,20 @@ function User() {
   )
 }
 ```
+
+## redux
+
+- action
+  1. 描述有事情发生了
+  2. 包含一个type字段，常被定义为字符串常量，表示要执行的动作。
+  3. 其他结构完全自定义，通常用来传递数据，建议尽量减少在action中传递的数据
+- reducer
+  1. 接收旧的state，action，更新并返回新的state
+  2. 不要修改旧的state
+- store
+  1. 维持应用的state
+  2. 利用`getState()`方法获取state
+  3. 利用`dispatch(action)`方法更新state
+  4. 利用`subscribe()`注册监听器
+
+

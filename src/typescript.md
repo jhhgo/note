@@ -277,6 +277,8 @@ interface Teach extends Person {
 
 ## 类
 
+es6中的内容就不赘述了
+
 **访问修饰符**
 
 - public
