@@ -1,12 +1,12 @@
 # typescript
 
-## 静态类型
+## 变量声明
 
-定义了就不可改变
+在声明变量时，指定变量的静态类型
 
 ```js
 let count: number = 1
-// 报错
+// count已经指定为number。报错
 count = '2'
 ```
 
@@ -15,7 +15,7 @@ count = '2'
 ```js
 // null undefined boolean void symbol
 let a: number = 111
-let a: string = '111'
+let b: string = '111'
 ```
 
 **对象静态类型**
@@ -52,6 +52,134 @@ interfact Person {
 const p1: Person = {
   name: 'jt',
   age: 20
+}
+```
+
+## 接口
+
+相当于自定义一种类型。被限定为该接口的变量，必须含有接口定义的属性、方法，并且类型要一致
+
+**严格匹配和宽松匹配**
+
+- 限定函数参数时，为宽松匹配
+- 变量声明时限定，为严格匹配
+
+```js
+interfact A {
+  bar: string;
+}
+// 报错，obj必须严格符合A，即有且只有一个属性bar且类型为string
+let obj: A = {
+  foo: 1,
+  bar: '1'
+}
+
+let obj = {
+  bar: '1',
+  foo: 1
+}
+// 可以，只要参数满足A的要求就可以，且与属性顺序无关
+function printA(obj: A) {
+  console.log(obj.bar)
+}
+```
+
+**可选属性**
+
+接口里的属性不全都是必需的。
+
+```js
+interface Person {
+  name: string;
+  school?: string;
+}
+function printPerson(p: Person) {
+  if (p.name) {
+    console.log('my name is ' + p.name)
+  }
+  if (p.school) {
+    console.log('and my school is ' + p.school)
+  }
+}
+```
+
+**只读属性**
+
+一些对象属性只能在对象刚刚创建的时候修改其值。使用`readonly`指定只读属性
+
+```js
+interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+
+let point: Point = {
+  x: 1,
+  y: 2
+}
+// 报错
+point.x = 3
+```
+
+**定义函数**
+
+接口中也可以定义函数
+
+```js
+interface funType {
+  // 定义调用签名，即参数列表和返回值类型。参数列表中的每个参数都需要名字和类型
+  (x: number, y: number): number;
+}
+let add: funType = function(x, y) {
+  return x + y
+}
+// 报错，参数类型不对，返回值也不对
+add(1, '2')
+```
+
+**类类型**
+
+与java里接口的作用一致, TypeScript也能够用它来明确的强制一个类去符合某种契约。
+
+```js
+interface PersonInterFace {
+  name: string;
+  sayName(): void;
+  setName(name: string): void;
+}
+
+class Person implements PersonInterFace {
+  name = ''
+  sayName() {
+    console.log(this.name)
+  }
+  setName(name) {
+    this.name = name
+  }
+}
+```
+
+注：接口不会检查静态部分
+
+**继承接口**
+
+接口之间也可以相互继承。支持多继承。可以拓展接口的功能
+
+```js
+interface A {
+  bar: string;
+}
+interfact C {
+  baz: string;
+}
+interface B extends A, C{
+  foo: string;
+}
+
+let obj: B = {
+  bar: '1',
+  foo: '2',
+  baz: '3'
 }
 ```
 
