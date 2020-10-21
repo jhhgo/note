@@ -394,3 +394,59 @@ function App(props) {
 
 - 父组件通过`props`传递数据给子组件
 - 父组件通过`props`传递函数给子组件，子组件内部调用传参，实现子组件向父组件通信
+
+## react-router
+
+**基本使用：**
+
+```js
+import React from 'react'
+import ReactDOM from 'react-dom'
+import { BrowserRouter, NavLink, Switch, Route } from 'react-router-dom'
+
+function App() {
+  return (
+    <BrowserRouter>
+      <NavLink to="/">首页</NavLink>
+      <NavLink to="/blog">博客</NavLink>
+      <NavLink to="/about">关于我</NavLink>
+
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/blog">
+          <Blog />
+        </Route>
+        <Route path="/about">
+          <About />
+        </Route>
+      </Switch>
+    </BrowserRouter>
+  )
+}
+```
+
+**动态路由匹配：**
+
+```js
+import {
+    ...
+    useParams,
+} from 'react-router-dom'
+
+<Switch>
+  <Route path='/user/:id'>
+    <User />
+  </Route>
+</Switch>
+
+
+function User() {
+  // 或者 let {id} = this.props.match.params
+  let { id } = useParams()
+  return (
+    <div>
+      user: id
+    </div>
+  )
+}
+```
