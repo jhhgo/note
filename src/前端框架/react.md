@@ -466,4 +466,76 @@ function User() {
   3. 利用`dispatch(action)`方法更新state
   4. 利用`subscribe()`注册监听器
 
+**基本使用**
+
+```js
+import { createStore } from 'redux'
+// reducer是一个纯函数，参数为state（可以设置初始值），和action，返回新的state
+const reducer = (state = 0, action) => {
+  switch(action.type) {
+    case 'add':
+    return state + action.data
+    case 'delete':
+    return state - action.data
+    default:
+    return state
+  }
+}
+
+// createStore创建一个store
+const store = createStore(reducer)
+
+// 获取状态
+store.getState()
+
+// action是一个对象，通常有type属性
+const action = {
+  type: 'add',
+  data: 1
+}
+
+// 可以用action生成函数来生成action
+const createAcion = val => ({type: 'add', val: 1})
+
+// 使用store.dispatch来分发action
+store.dispatch(action)
+store.dispatch(createAction(2))
+
+// store订阅监听器
+// dispatch后会调用
+store.subscribe(() => {
+  console.log('change state')
+})
+```
+
+**createStore基本实现**
+
+```js
+const createStore = (reducer) => {
+  let state
+  let listeners = []
+  const getState = () => {
+    return state
+  }
+  const dispatch = (action) => {
+    state = reducer(state, action)
+    listeners.forEach(listener => listener())
+  }
+  const subscribe = (listener) => {
+    listeners.push(listener)
+    // 调用subscribe会返回一个取消订阅函数
+    return () => {
+      listeners = listeners.filter(l => l !== listener)
+    }
+  }
+  // 第一次创建store后会默认调用一次
+  dispatch()
+  return {
+    getState,
+    dispatch,
+    subscribe
+  }
+}
+```
+
 
