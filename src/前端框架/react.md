@@ -455,15 +455,15 @@ function User() {
 
 - action
   1. 描述有事情发生了
-  2. 包含一个type字段，常被定义为字符串常量，表示要执行的动作。
-  3. 其他结构完全自定义，通常用来传递数据，建议尽量减少在action中传递的数据
+  2. 包含一个 type 字段，常被定义为字符串常量，表示要执行的动作。
+  3. 其他结构完全自定义，通常用来传递数据，建议尽量减少在 action 中传递的数据
 - reducer
-  1. 接收旧的state，action，更新并返回新的state
-  2. 不要修改旧的state
+  1. 接收旧的 state，action，更新并返回新的 state
+  2. 不要修改旧的 state
 - store
-  1. 维持应用的state
-  2. 利用`getState()`方法获取state
-  3. 利用`dispatch(action)`方法更新state
+  1. 维持应用的 state
+  2. 利用`getState()`方法获取 state
+  3. 利用`dispatch(action)`方法更新 state
   4. 利用`subscribe()`注册监听器
 
 **基本使用**
@@ -472,13 +472,13 @@ function User() {
 import { createStore } from 'redux'
 // reducer是一个纯函数，参数为state（可以设置初始值），和action，返回新的state
 const reducer = (state = 0, action) => {
-  switch(action.type) {
+  switch (action.type) {
     case 'add':
-    return state + action.data
+      return state + action.data
     case 'delete':
-    return state - action.data
+      return state - action.data
     default:
-    return state
+      return state
   }
 }
 
@@ -491,11 +491,11 @@ store.getState()
 // action是一个对象，通常有type属性
 const action = {
   type: 'add',
-  data: 1
+  data: 1,
 }
 
 // 可以用action生成函数来生成action
-const createAcion = val => ({type: 'add', val: 1})
+const createAcion = (val) => ({ type: 'add', val: 1 })
 
 // 使用store.dispatch来分发action
 store.dispatch(action)
@@ -508,7 +508,7 @@ store.subscribe(() => {
 })
 ```
 
-**createStore基本实现**
+**createStore 基本实现**
 
 ```js
 const createStore = (reducer) => {
@@ -519,13 +519,13 @@ const createStore = (reducer) => {
   }
   const dispatch = (action) => {
     state = reducer(state, action)
-    listeners.forEach(listener => listener())
+    listeners.forEach((listener) => listener())
   }
   const subscribe = (listener) => {
     listeners.push(listener)
     // 调用subscribe会返回一个取消订阅函数
     return () => {
-      listeners = listeners.filter(l => l !== listener)
+      listeners = listeners.filter((l) => l !== listener)
     }
   }
   // 第一次创建store后会默认调用一次
@@ -533,9 +533,112 @@ const createStore = (reducer) => {
   return {
     getState,
     dispatch,
-    subscribe
+    subscribe,
   }
 }
 ```
 
+**实战代码**
 
+```js
+// action.js
+export const CHANGE_CHANNEL = 'change_channel'
+// action生成函数
+export const changeChannel = (channel) => ({
+  type: CHANGE_CHANNEL,
+  channel,
+})
+```
+
+```js
+// reducer.js
+import { CHANGE_CHANNEL } from './action.js'
+// combineReducers用来合并多个reducer
+import { combineReducers } from 'redux'
+
+const channel = (state = 'cctv5', action) => {
+  switch (action.type) {
+    case CHANGE_CHANNEL:
+      return action.channel
+    default:
+      return state
+  }
+}
+// 为了测试，简单的reducer
+const name = (state = 'test', action) => {
+  return state
+}
+const rootReducer = combineReducers({
+  channel,
+  name,
+})
+// 暴露顶级reducer
+export default rootReducer
+```
+
+```js
+// index.js
+import React from 'react'
+import ReactDOM from 'react-dom'
+import { createStore } from 'redux'
+// 在渲染根组件时使用，让所有组件都可以访问store，而不必显示传递
+import { Provider } from 'react-redux'
+import reducer from './reducers.js'
+import App from './app.js'
+
+const store = createStore(reducer)
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>
+)
+```
+
+**容器组件**
+
+技术上讲，容器组件就是使用 store.subscribe() 从 Redux state 树中读取部分数据，并通过 props 来把这些数据提供给要渲染的组件。
+
+个人理解：容器组件可以将 redux 和 react 关联起来，具体地说容器组件向展示组件传入组件渲染需要的 state，以及更新 state 需要的方法。
+
+mapStateToProps 这个函数来指定如何把当前 Redux store state 映射到展示组件的 props 中。判断组件需要哪些 state
+
+mapDispatchToProps() 方法接收 dispatch() 方法并返回期望注入到展示组件的 props 中的回调方法。
+
+以 redux 官网的 todolist 为例 👇
+
+```js
+// VisibleTodoList 需要计算传到 TodoList 中的 todos，所以定义了根据 state.visibilityFilter 来过滤 state.todos 的方法，并在 mapStateToProps 中使用。
+
+// 根据state.visibilityFilter 来过滤 state.todos
+const getVisibleTodos = (todos, filter) => {
+  switch (filter) {
+    case 'SHOW_COMPLETED':
+      return todos.filter((t) => t.completed)
+    case 'SHOW_ACTIVE':
+      return todos.filter((t) => !t.completed)
+    case 'SHOW_ALL':
+    default:
+      return todos
+  }
+}
+
+// 调用getVisibleTodos获取过滤好的state，并且会传递给展示组件
+const mapStateToProps = (state) => {
+  return {
+    todos: getVisibleTodos(state.todos, state.visibilityFilter),
+  }
+}
+
+//  VisibleTodoList 向 TodoList 组件中注入一个叫 onTodoClick 的 props ，还希望 onTodoClick 能分发 TOGGLE_TODO 这个 action
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onTodoClick: (id) => {
+      dispatch(toggleTodo(id))
+    },
+  }
+}
+
+//  最后，使用 connect() 创建 VisibleTodoList，并传入这两个函数。
+const VisibleTodoList = connect(mapStateToProps, mapDispatchToProps)(TodoList)
+export default VisibleTodoList
+```
