@@ -130,7 +130,7 @@ interface funType {
   // 定义调用签名，即参数列表和返回值类型。参数列表中的每个参数都需要名字和类型
   (x: number, y: number): number;
 }
-let add: funType = function(x, y) {
+let add: funType = function (x, y) {
   return x + y
 }
 // 报错，参数类型不对，返回值也不对
@@ -139,7 +139,7 @@ add(1, '2')
 
 **类类型**
 
-与java里接口的作用一致, TypeScript也能够用它来明确的强制一个类去符合某种契约。
+与 java 里接口的作用一致, TypeScript 也能够用它来明确的强制一个类去符合某种契约。
 
 ```js
 interface PersonInterFace {
@@ -183,36 +183,47 @@ let obj: B = {
 }
 ```
 
-## 类型注解和类型推断
+## 函数
 
-- 通过`:`为变量指定类型
-- typescript 会自动判断一些变量的类型
+**参数类型**
 
-## 函数参数和返回类型的注解
+```js
+function add(x: number, y: number) {}
+```
 
-**返回值类型注解**
+**返回值类型**
+
+```js
+function add(): number {}
+```
+
+**可选参数与默认值**
+
+ts 中，传入函数的参数必须和函数定义一致。
 
 ```js
 function add(x: number, y: number): number {
   return x + y
 }
 
-// 无返回值
-function foo(str: string): void {
-  console.log(str)
+add(1) // 报错
+```
+
+如果想实现可选参数可以使用`?`，可选参数必须在必选参数之后
+
+```js
+function add(x: number, y: number, z?: number) {
+  if (z) {
+    return x + y + z
+  }
+  return x + y
 }
 ```
 
-**参数类型注解**
+可以和 es6 一样，实现参数默认值
 
 ```js
-// 基本用法
-function add(x: number, y: number) {
-  return x + y
-}
-
-// 参数是对象时
-function add({ x, y }: { x: number, y: number }) {
+function add(x: number, y = 0): number {
   return x + y
 }
 ```
@@ -277,7 +288,7 @@ interface Teach extends Person {
 
 ## 类
 
-es6中的内容就不赘述了
+es6 中的内容就不赘述了
 
 **访问修饰符**
 
@@ -285,18 +296,43 @@ es6中的内容就不赘述了
 - private 只能在类的内部使用
 - protected 不允许在类的外部使用，但是可以在子类中使用
 
-**抽象类**
+**readonly 修饰符**
+
+使用`readonly`关键字将属性设置为只读的。只读属性必须在声明时或构造函数里被初始化
 
 ```js
-// 声明了一个抽象类
-abstract class Person{
-  // 抽象方法，不包含函数体，继承自抽象类的类必须实现全部的抽象方法
-  abstract say()
+class Person {
+  readonly name: string
+  constructor(name) {
+    this.name = name
+  }
 }
+let p1 = new Person('jt')
+// 报错，属性只读
+p1.name = 'jhh'
+```
 
-class Student extends Person {
-  say() {
-    console.log('我是学生')
+可以使用参数属性来直接创建并初始化类的属性
+
+```js
+class Person {
+  constructor(readonly name: string) {
+    this.name = name
+  }
+}
+```
+
+**抽象类**
+
+抽象类作为其他派生类的基类使用，一般不会直接被实例化。不同于接口，抽象类可以包含成员的实现细节，即可以有抽象方法，也可以有具体方法
+
+继承自抽象类的子类必须实现所有抽象方法
+
+```js
+abstract class Animal {
+  abstract makeSound(): void
+  move(): void{
+    console.log('moving...')
   }
 }
 ```
@@ -369,30 +405,42 @@ function addObj(first: Object | MyObj, second: Object | MyObj) {
 
 ## 泛型
 
-我的理解作用是可以动态的限定类型
+可以使用泛型来创建可重用的组件，一个组件可以支持多种类型的数据。 这样用户就可以以自己的数据类型来使用组件。
+
+我的理解,作用是可以动态的限定类型
 
 ```js
-function join<Type>(first: Type, second: Type) {
+function join<Type>(first: Type, second: Type): string {
   return `${first}${second}`
 }
 
-join<string>('hello', 'world')
+join < string > ('hello', 'world')
+```
 
-// 数组泛型
-function myFun<ANY>(params: ANY[]) {
-  return params
+除了定义泛型函数，还可以定位泛型类
+
+```js
+class GenericNumber<T> {
+    zeroValue: T;
+    add: (x: T, y: T) => T;
 }
-// 也可以这样写
-function myFun<ANY>(params: Array<ANY>) {
-  return params
+
+let myGenericNumber = new GenericNumber<number>();
+myGenericNumber.zeroValue = 0;
+myGenericNumber.add = function(x, y) { return x + y; };
+```
+
+**泛型约束**
+
+```js
+// 类型变量继承自一个接口
+interface Lengthwise {
+  length: number;
 }
-// 数组项必须是string
-myFun<string>(['123', '456'])
-// 定义多个泛型
-function join<T,P>(first: T, second: P) {
-  return `${first}${second}`
+function loggingIdentity<T extends Lengthwise>(arg: T): T {
+    console.log(arg.length);
+    return arg;
 }
-// 在类中使用泛型
 ```
 
 ## 命令空间
