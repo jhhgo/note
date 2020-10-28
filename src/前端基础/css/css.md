@@ -172,10 +172,21 @@ inner {
 3. flex
 
 ```css
-outer {
-	display: flex;
-	justify-content: center;
-	align-items: center;
+.flex-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+```
+
+4. flex + margin
+
+```css
+.flex-container {
+  display: flex;
+}
+.flex-item {
+  margin: auto;
 }
 ```
 
