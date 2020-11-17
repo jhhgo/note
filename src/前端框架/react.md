@@ -642,3 +642,29 @@ const mapDispatchToProps = (dispatch) => {
 const VisibleTodoList = connect(mapStateToProps, mapDispatchToProps)(TodoList)
 export default VisibleTodoList
 ```
+
+## react hook
+
+简单来说，通过react hook可以在react函数组件中使用state以及其他的react特性
+
+**useState**
+
+```js
+import React, { useState } from 'react'
+function App() {
+  // 声明了一个叫count的state变量，并设置为0
+  // 返回了当前state的值以及更新state的函数
+  const { count, setCount } = useState(0)
+  return (
+    <div>
+      click {count} times
+      <button onClick={() => setCount(count + 1)}>click me</button>
+    </div>
+  )
+}
+```
+
+useState的使用：
+
+  1. useState参数：`useState()`的唯一参数就是初始state
+  2. useState返回值：返回一个数组，包含了当前state以及更新state的函数
