@@ -196,7 +196,7 @@ inner {
 }
 ```
 
-## 2. 三列布局
+## 2. 三列布局 （两边定宽，中间自适应）
 
 ### 2.1 圣杯布局
 
@@ -323,7 +323,31 @@ inner {
 </html>
 ```
 
-## 3.两栏布局
+### 2.3 flex
+
+```html
+<style>
+  body {
+    display: flex;
+  }
+  .left,
+  .right {
+    width: 25vw;
+    height: 100vh;
+  }
+  .main {
+    flex: 1;
+    height: 100vh;
+  }
+</style>
+<html>
+  <div class="left"></div>
+  <div class="main"></div>
+  <div class="right"></div>
+</html>
+```
+
+## 3.两栏布局 （一边定宽，一边自适应）
 
 **float+margin 或 float+overflow: auto**
 
@@ -371,6 +395,45 @@ inner {
   </div>
 </body>
 ```
+
+## 4.等高布局
+
+**伪等高**
+
+1. 负 margin
+
+原理：元素的背景是在元素的 padding(以及 content)区域绘制，设置一个大数值的 padding-bottom，再设置相同数值的负 margin-bottom，使背景铺满元素区域，又符合元素的盒模型的计算公式，实现视觉上的等高效果
+
+```html
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  .wrap {
+    overflow: hidden;
+  }
+  .left,
+  .right {
+    float: flet;
+    padding-bottom: 10000px;
+    margin-bottom: -10000px;
+  }
+</style>
+<body>
+  <div class="wrap">
+    <div class="left">
+      left <br />
+      left <br />
+    </div>
+    <div class="right">right <br /></div>
+  </div>
+</body>
+```
+
+**真等高**
+
+1. flex
 
 # BFC
 

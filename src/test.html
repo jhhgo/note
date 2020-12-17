@@ -13,28 +13,52 @@
         margin: 0;
         padding: 0;
       }
-      html,
-      body {
-        height: 100%;
+      .wrap {
+        height: 500px;
+        width: 500px;
+        border: 1px solid black;
+        margin: 50px auto;
+        display: flex;
       }
       .left {
-        width: 100px;
-        height: 100%;
+        width: 200px;
         background-color: #4cda60;
-        float: left;
       }
       .right {
-        height: 100%;
-        background-color: pink;
-        margin-left: 100px;
+        width: 300px;
+        background-color: red;
+      }
+      .left,
+      .right {
+        flex: 0 0;
       }
     </style>
   </head>
   <body>
-    <div class="wrap" style="height: 100%">
-      <div class="left"></div>
-      <div class="right">啊啊啊</div>
+    <div class="wrap">
+      <div class="left">
+        left <br />
+        left <br />
+        left <br />
+        left <br />
+        left <br />
+        left <br />
+        left <br />
+        left <br />
+        left <br />
+      </div>
+      <div class="right">
+        right <br />
+        right <br />
+        right <br />
+        right <br />
+        right <br />
+        right <br />
+        right <br />
+        right <br />
+      </div>
     </div>
+    <div></div>
     <script></script>
   </body>
 </html>
