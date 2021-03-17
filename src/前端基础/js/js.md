@@ -9,6 +9,7 @@
 5. String
 6. Symbol
 7. Object
+8. Binint
 
 ### 1.1 typeof 操作符
 
@@ -84,7 +85,7 @@ function unique(arr) {
     if (!obj[item]) {
       newArr.push(item)
       obj[item] = [type]
-    } else if (!obj[item].includes(item)) {
+    } else if (!obj[item].includes(type)) {
       newArr.push(item)
       obj[item].push(type)
     }
@@ -98,7 +99,7 @@ function unique(arr) {
 ```js
 var arr = [1, 2, [3, [4, 5]]]
 
-// flat()
+// es6 flat()
 arr.flat(Infinity)
 
 // 递归
@@ -158,7 +159,7 @@ function shuffer(arr) {
      __proto__: fn.prototype,
    }
    ```
-2. 将上面的空对象赋值构造函数内部的`this`，用构造函数内部的方法修改空对象
+2. 将上面的空对象赋值为构造函数内部的`this`，用构造函数内部的方法修改空对象
 3. 如果构造函数返回一个非基本类型的值 a，则返回 a，否则返回上面创建的对象
    ```js
    function A() {
@@ -338,13 +339,13 @@ function equal(a, b) {
     let dateA = a instanceof Date,
       dateB = b instanceof Date
     if (dateA !== dateB) return false
-    if (dateA && dateB) return dateA.getTime() === dateB.getTime()
+    if (dateA && dateB) return a.getTime() === b.getTime()
 
     // 判断正则类型
     let regA = a instanceof RegExp
     let regB = b instanceof RegExp
     if (regA !== regB) return false
-    if (regA && regB) return regA.toString() === regB.toString()
+    if (regA && regB) return a.toString() === b.toString()
 
     // 判断对象
     let keys = Object.keys(a),
@@ -427,7 +428,7 @@ function throttle(fn, time) {
 Function.prototype.call = function (context, ...args) {
   context = context || window
   context.fn = this
-  let ret = contetx.fn(...args)
+  let ret = context.fn(...args)
   delete context.fn
   return ret
 }
