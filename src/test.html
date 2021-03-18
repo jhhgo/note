@@ -7,14 +7,25 @@
   <style>
   </style>
 </head>
- 
+
 <body>
   <script>
+    let handler = {
+      apply: function (target, myThis, args) {
+        console.log(target, myThis, args);
+        return Reflect.apply(...args)
+      }
+    }
 
-    let [a, b, c] = [1, 2, 3]
-    console.log(a);
-    console.log(b);
-    console.log(c);
+    let proxy = new Proxy(function (a, b) {
+      this.name = a
+      this.age = b
+    }, handler)
+
+    proxy('jt', 20)
+    let obj = {}
+    proxy.call(obj, 'jt', 20)
+    console.log(obj);
 
   </script>
 </body>
