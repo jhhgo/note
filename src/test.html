@@ -12,8 +12,7 @@
   <script>
     let handler = {
       apply: function (target, myThis, args) {
-        console.log(target, myThis, args);
-        return Reflect.apply(...args)
+        return Reflect.apply(...arguments)
       }
     }
 
