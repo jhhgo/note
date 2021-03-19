@@ -10,21 +10,15 @@
 
 <body>
   <script>
-    let handler = {
-      apply: function (target, myThis, args) {
-        return Reflect.apply(...arguments)
-      }
-    }
 
-    let proxy = new Proxy(function (a, b) {
-      this.name = a
-      this.age = b
-    }, handler)
-
-    proxy('jt', 20)
-    let obj = {}
-    proxy.call(obj, 'jt', 20)
-    console.log(obj);
+    let promise = new Promise((resolve, reject) => {
+      console.log('p1');
+      resolve('value')
+    })
+    console.log('hah');
+    promise.then((value) => {
+      console.log('resolve', value)
+    })
 
   </script>
 </body>
