@@ -11,6 +11,30 @@ let myId = 'myh3'
 let vDom = <h3 id={myh3}>{2 + 2}</h3>
 ```
 
+实际上，Babel会把JSX转译为`React.createElement()`函数调用，如下。
+
+```js
+const element = (
+  <h1 className="greeting">
+    Hello, world!
+  </h1>
+);
+
+// 等价于
+
+const element = React.createElement(
+  'h1',
+  {className: 'greeting'},
+  'Hello, world!'
+);
+
+<App />
+
+// 等价于
+React.createElement(App, null)
+
+```
+
 ## 组件
 
 ### 创建组件
