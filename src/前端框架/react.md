@@ -722,3 +722,40 @@ useState 的使用：
 
 1. useState 参数：`useState()`的唯一参数就是初始 state
 2. useState 返回值：返回一个数组，包含了当前 state 以及更新 state 的函数
+
+## 高阶组件
+
+> 高阶组件（HOC）是 React 中用于复用组件逻辑的一种高级技巧。HOC 自身不是 React API 的一部分，它是一种基于 React 的组合特性而形成的设计模式。
+
+**具体而言，高阶组件是参数为组件，输出为新组件的函数**
+
+```js
+const CatWithMouse = withMouse(Cat)
+```
+
+```js
+function App () {
+  const CatWithMouse = withMouse(Cat)
+  return <CatWithMouse />
+}
+
+function Cat(props) {
+  let {x, y} = props.mouse
+  return <img src='test.png' style={{position: 'absolute', left: x, top: y, width: '40px', height: '40px'}} />
+}
+
+function withMouse(WrappedWithMouse) {
+  return function () {
+    let [point, setPoint] = useState({x: 0, y: 0})
+    const move = (e) => {
+      setPoint({x: e.clientX, y: e.clientY})
+    }
+    return (
+      <div style={{height: '100vh'}} onMouseMove={move}>
+        鼠标位置：{point.x}, {point.y}
+        <WrappedWithMouse mouse={point} />
+      </div>
+    )
+  }
+}
+```
