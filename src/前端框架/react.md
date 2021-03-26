@@ -11,28 +11,23 @@ let myId = 'myh3'
 let vDom = <h3 id={myh3}>{2 + 2}</h3>
 ```
 
-实际上，Babel会把JSX转译为`React.createElement()`函数调用，如下。
+实际上，Babel 会把 JSX 转译为`React.createElement()`函数调用，如下。
 
 ```js
-const element = (
-  <h1 className="greeting">
-    Hello, world!
-  </h1>
-);
+const element = <h1 className="greeting">Hello, world!</h1>
 
 // 等价于
 
 const element = React.createElement(
   'h1',
-  {className: 'greeting'},
+  { className: 'greeting' },
   'Hello, world!'
-);
+)
 
-<App />
+;<App />
 
 // 等价于
 React.createElement(App, null)
-
 ```
 
 ## 组件
@@ -63,6 +58,9 @@ function Person(props) {
 }
 // es6类
 class Person {
+  constructor(props) {
+    super(props)
+  }
   render() {
     return (
       <ul>
@@ -138,7 +136,7 @@ class Count extends React.Component {
 }
 ```
 
-**状态更新：**
+**状态更新：setState({})**
 
 错误的做法：直接修改 state。
 
@@ -156,6 +154,38 @@ increment() {
   let count = this.state.count + 1
   this.setState({count})
 }
+```
+
+state 的更新可能/通常是异步的
+
+```js
+class App ..{
+    ..() {
+        this.state = {
+            count: 0
+        }
+    }
+
+    ..() {
+        this.setState({
+        	count: 1
+    	})
+        console.log(this.state.count) // 输出0
+    }
+}
+```
+
+想要获取修改后的值，我们可以传一个回调函数给 setState
+
+```js
+this.setState(
+  {
+    count: 1,
+  },
+  () => {
+    console.log(this.state.count) // 输出1
+  }
+)
 ```
 
 ### refs
@@ -669,7 +699,7 @@ export default VisibleTodoList
 
 ## react hook
 
-简单来说，通过react hook可以在react函数组件中使用state以及其他的react特性
+简单来说，通过 react hook 可以在 react 函数组件中使用 state 以及其他的 react 特性
 
 **useState**
 
@@ -688,7 +718,7 @@ function App() {
 }
 ```
 
-useState的使用：
+useState 的使用：
 
-  1. useState参数：`useState()`的唯一参数就是初始state
-  2. useState返回值：返回一个数组，包含了当前state以及更新state的函数
+1. useState 参数：`useState()`的唯一参数就是初始 state
+2. useState 返回值：返回一个数组，包含了当前 state 以及更新 state 的函数
