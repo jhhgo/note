@@ -10,13 +10,17 @@
 
 <body>
   <script>
+    function foo() {
+      console.log(a)
+      console.log(b)
+      console.log(c)
+      var a = 1
 
-    for (var i=0; i < 3; i++) {
-
+      function b() {}
+      var b = 2
+      c = 3
     }
-    console.log(i);
-
-
+    foo()
   </script>
 </body>
 
