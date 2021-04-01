@@ -961,3 +961,137 @@ AO = {
   b: function b
 }
 ```
+
+# this
+
+## Reference
+
+ECMAScript规范中定义了两种类型：语言类型和规范类型。语言类型是开发者可以直接操作的，比如：Undefined Null Boolean等
+不同于语言类型。规范类型是一种只存在于规范中的类型，它们的作用是用来描述语言底层行为逻辑。
+
+**什么是Reference**
+
+Reference类型是用来解释诸如delete typeof 以及赋值等操作行为的。
+
+Reference由三部分组成：
+1. base value
+2. referenced name
+3. strict reference
+
+base value 就是属性所在的对象或者就是 EnvironmentRecord，它的值只可能是 undefined, an Object, a Boolean, a String, a Number, or an environment record 其中的一种。
+
+referenced name 就是属性的名称。
+
+例子👇
+
+```js
+var foo = 1;
+
+// 对应的Reference是：
+var fooReference = {
+  base: EnvironmentRecord,
+  name: 'foo',
+  strict: false
+};
+```
+
+```js
+var foo = {
+  bar: function () {
+    return this;
+  }
+};
+ 
+foo.bar(); // foo
+
+// bar对应的Reference是：
+var BarReference = {
+  base: foo,
+  propertyName: 'bar',
+  strict: false
+};
+```
+
+**获取Reference组成部分的方法**
+
+1. GetBase 返回 reference 的 base value。
+
+2. IsPropertyReference 如果 base value 是一个对象，就返回true。
+
+**GetValue**
+
+> 用于从 Reference 类型获取对应值的方法
+
+```js
+var foo = 1;
+
+var fooReference = {
+    base: EnvironmentRecord,
+    name: 'foo',
+    strict: false
+};
+
+GetValue(fooReference) // 1;
+```
+
+## 如何确定this的值
+
+步骤：
+1. 计算 MemberExpression 的结果赋值给 ref
+2. 判断 ref 是不是一个 Reference 类型
+  2.1 如果 ref 是 Reference，并且 IsPropertyReference(ref) 是 true, 那么 this 的值为 GetBase(ref)
+  2.2 如果 ref 是 Reference，并且 base value 值是 Environment Record, 那么this的值为 ImplicitThisValue(ref)
+  2.3 如果 ref 不是 Reference，那么 this 的值为 undefined
+
+**MemberExpression是什么？**
+
+```js
+function foo() {
+    console.log(this)
+}
+
+foo(); // MemberExpression 是 foo
+
+function foo() {
+    return function() {
+        console.log(this)
+    }
+}
+
+foo()(); // MemberExpression 是 foo()
+
+var foo = {
+    bar: function () {
+        return this;
+    }
+}
+
+foo.bar(); // MemberExpression 是 foo.bar
+```
+
+简单理解，MemberExpression 其实就是()左边的部分。
+
+**判断 ref 是不是一个 Reference 类型**
+
+```js
+var value = 1;
+
+var foo = {
+  value: 2,
+  bar: function () {
+    return this.value;
+  }
+}
+
+//示例1
+console.log(foo.bar());
+//示例2
+console.log((foo.bar)());
+//示例3
+console.log((foo.bar = foo.bar)());
+//示例4
+console.log((false || foo.bar)());
+//示例5
+console.log((foo.bar, foo.bar)());
+```
+
