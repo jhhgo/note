@@ -453,10 +453,313 @@ Function.prototype.bind = function (context, ...args) {
 }
 ```
 
+# 原型链
+
+## 函数的 prototype
+
+每个函数都有一个 prototype 属性，这个对象指向实例的原型对象。每一个 JavaScript 对象(null 除外)在创建的时候就会与之关联另一个对象，这个对象就是我们所说的原型，每一个对象都会从原型"继承"属性
+
+```js
+function Person() {}
+Person.ptototype.name = 'jt'
+let p1 = new Person()
+let p2 = new Person()
+// p1.name = p2.name = 'jt'
 ```
 
+**构造函数和实例的原型对象之间的关系 👇**
+
+![原型链](C:\Users\姜嘿嘿\Desktop\imgs\构造函数与实例原型.png)
+
+## 实例的__proto__
+
+> 每一个 JavaScript 对象(除了 null )都具有的一个属性，叫**proto**，这个属性会指向该对象的原型。
+
+```js
+function Person() {}
+var person = new Person()
+console.log(person.__proto__ === Person.prototype) // true
 ```
 
+更新关系图👇
+
+![原型链](C:\Users\姜嘿嘿\Desktop\imgs\原型链1.png)
+
+## 原型的constructor
+
+> 原型的onstructor属性指向构造函数
+
+```js
+function Person() {
+
+}
+Person === Person.prototype.constructor // true
 ```
 
+更新关系图👇
+
+![原型链](C:\Users\姜嘿嘿\Desktop\imgs\原型链2.png)
+
+
+## 查找实例属性的过程
+
+> 当读取实例的属性时，如果找不到，就会查找实例原型的属性，如果还查不到，就去找原型的原型，一直找到最顶层为止。
+
+```js
+function Person() {
+
+}
+Person.prototype.name = 'jt'
+let p1 = new Person()
+p1.name = 'jhh'
+
+console.log(p1.name) // jhh
+delete p1.name
+console.log(p1.name) // jt
 ```
+
+## 原型的原型
+
+> 因为所有js对象都有原型对象，所以原型也有原型对象
+
+其实原型对象就是通过 Object 构造函数生成的，结合之前所讲，实例的 __proto__ 指向构造函数的 prototype ，所以我们再更新下关系图：
+
+![原型链](C:\Users\姜嘿嘿\Desktop\imgs\原型链3.png)
+
+## 原型链
+
+> 每个实例对象都有一个私有属性 __proto__ 指向它的构造函数的原型对象。该原型对象也有一个自己的原型对象__proto__  ，层层向上直到一个对象的原型对象为 null。根据定义，null 没有原型，并作为这个原型链中的最后一个环节。
+
+**Object.prototype没有原型**
+
+```js
+Object.prototype.__proto__ === null // true
+```
+
+完整原型链👇
+
+![原型链](C:\Users\姜嘿嘿\Desktop\imgs\原型链4.png)
+
+# 作用域
+
+> 作用域是指程序源代码中定义变量的区域。作用域规定了如何查找变量，也就是确定当前执行代码对变量的访问权限。JavaScript 采用词法作用域(lexical scoping)，也就是静态作用域。
+
+> JavaScript代码执行一段可执行代码时，会创建对应的执行上下文(execution context)。
+
+对于每个执行上下文，都有三个重要属性：
+
+- 变量对象(Variable object，VO)
+- 作用域链(Scope chain)
+- this
+
+## 作用域链
+
+> 当查找变量的时候，会先从当前上下文的变量对象中查找，如果没有找到，就会从父级(词法层面上的父级)执行上下文的变量对象中查找，一直找到全局上下文的变量对象，也就是全局对象。这样由多个执行上下文的变量对象构成的链表就叫做作用域链。
+
+下面，让我们以一个函数的创建和激活两个时期来讲解作用域链是如何创建和变化的。
+
+## 函数创建
+
+js采用静态作用域，函数的作用域在函数定义的时候就确定了。
+因为函数有一个内部属性 [[scope]]，当函数创建的时候，就会保存所有父变量对象到其中，你可以理解 [[scope]] 就是所有父变量对象的层级链，但是注意：[[scope]] 并不代表完整的作用域链！ 不包含自身AO/VO
+
+例子👇：
+
+```js
+function foo() {
+  function bar() {
+
+  }
+}
+```
+
+函数创建时，各自的[[scope]]👇：
+
+```js
+foo.[[scope]] = [
+  globalContext.VO
+];
+
+bar.[[scope]] = [
+    fooContext.AO,
+    globalContext.VO
+];
+```
+
+## 函数激活
+
+当函数激活时，进入函数上下文，创建 VO/AO 后，就会将活动对象添加到作用链的前端。
+这时候执行上下文的作用域链，我们命名为 Scope：
+
+```js
+Scope = [AO].concat([[scope]])
+```
+
+至此，作用域链创建完毕。
+
+## 总结
+
+以下面的例子为例，结合着之前讲的变量对象和执行上下文栈，我们来总结一下函数执行上下文中作用域链和变量对象的创建过程：
+
+```js
+var scope = "global scope";
+function checkscope(){
+    var scope2 = 'local scope';
+    return scope2;
+}
+checkscope();
+```
+
+执行过程如下：
+
+1.checkscope 函数被创建，保存作用域链到 内部属性[[scope]]
+
+```js
+checkscope.[[scope]] = [
+    globalContext.VO
+];
+```
+
+2.执行 checkscope 函数，创建 checkscope 函数执行上下文，checkscope 函数执行上下文被压入执行上下文栈
+
+```js
+ECStack = [
+    checkscopeContext,
+    globalContext
+];
+```
+
+3.checkscope 函数并不立刻执行，开始做准备工作，第一步：复制函数[[scope]]属性创建作用域链
+
+```js
+checkscopeContext = {
+    Scope: checkscope.[[scope]],
+}
+```
+
+4.第二步：用 arguments 创建活动对象，随后初始化活动对象，加入形参、函数声明、变量声明
+
+```j
+checkscopeContext = {
+    AO: {
+        arguments: {
+            length: 0
+        },
+        scope2: undefined
+    }，
+    Scope: checkscope.[[scope]],
+}
+```
+
+5.第三步：将活动对象压入 checkscope 作用域链顶端
+
+```js
+checkscopeContext = {
+    AO: {
+        arguments: {
+            length: 0
+        },
+        scope2: undefined
+    },
+    Scope: [AO, [[Scope]]]
+}
+```
+
+6.准备工作做完，开始执行函数，随着函数的执行，修改 AO 的属性值
+
+```js
+checkscopeContext = {
+    AO: {
+        arguments: {
+            length: 0
+        },
+        scope2: 'local scope'
+    },
+    Scope: [AO, [[Scope]]]
+}
+```
+
+7.查找到 scope2 的值，返回后函数执行完毕，函数上下文从执行上下文栈中弹出
+
+```js
+ECStack = [
+    globalContext
+];
+```
+
+## 静态作用域和函数作用域
+
+> 因为 JavaScript 采用的是词法作用域，函数的作用域在函数定义的时候就决定了。
+> 而与词法作用域相对的是动态作用域，函数的作用域是在函数调用的时候才决定的。
+
+用一个例子说明区别👇
+
+```js
+var value = 1;
+
+function foo() {
+    console.log(value);
+}
+
+function bar() {
+    var value = 2;
+    foo();
+}
+
+bar();
+
+// 输出1
+```
+
+假设JavaScript采用静态作用域，让我们分析下执行过程：
+执行 foo 函数，先从 foo 函数内部查找是否有局部变量 value，如果没有，就根据书写的位置，查找上面一层的代码，也就是 value 等于 1，所以结果会打印 1。
+假设JavaScript采用动态作用域，让我们分析下执行过程：
+执行 foo 函数，依然是从 foo 函数内部查找是否有局部变量 value。如果没有，就从调用函数的作用域，也就是 bar 函数内部查找 value 变量，所以结果会打印 2。
+前面我们已经说了，JavaScript采用的是静态作用域，所以这个例子的结果是 1。
+
+foo的[[scope]]👇
+
+```js
+foo.[[scope]] = [
+  globalContext.VO
+]
+```
+
+**思考题**
+
+```js
+var scope = "global scope";
+function checkscope(){
+    var scope = "local scope";
+    function f(){
+        return scope;
+    }
+    return f();
+}
+checkscope();
+```
+
+```js
+var scope = "global scope";
+function checkscope(){
+    var scope = "local scope";
+    function f(){
+        return scope;
+    }
+    return f;
+}
+checkscope()();
+```
+
+问两段代码的执行结果，答案：`local scope`
+
+第一题f的`[[scope]]`👇
+
+```js
+f.[[scope]] = [
+  checkscopeContext.VO,
+  globalContext.VO
+]
+```
+
+第二题f的`[[scope]]`和第一题一致。
