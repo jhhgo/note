@@ -838,6 +838,84 @@ fContext = {
 
 一句话总结闭包：内部函数的作用域链引用了外部执行上下文的变量对象，所以当外部执行上下文被销毁时，仍然可以通过作用域链访问到外部变量。
 
+## 题目
+
+```js
+var data = [];
+
+for (var i = 0; i < 3; i++) {
+  data[i] = function () {
+    console.log(i);
+  };
+}
+
+data[0]();
+data[1]();
+data[2]();
+```
+
+全局上下文的VO👇
+
+```js
+globalContext = {
+  VO: {
+    data: [...],
+    i: 3
+  }
+}
+```
+
+当执行到data[0]时候，data[0]的作用域链👇
+
+```js
+data[0]Context = {
+  Scope: [AO, globalContext.VO]
+}
+```
+
+所以输出3，data[1]和data[2]同理
+
+```js
+var data = []
+for (var i=0; i<3; i++) {
+  data[i] = (function (i) {
+    return function() {
+      console.log(i)
+    }
+  })(i)
+}
+
+data[0]();
+data[1]();
+data[2]();
+```
+
+全局上下文的VO和上一段代码一样
+
+匿名函数执行上下文的AO👇
+
+```js
+匿名函数Context = {
+  AO: {
+    arguments: {
+      0: 0,
+      length: 1
+    },
+    i: 0
+  }
+}
+```
+
+当执行到data[0]时候，data[0]的作用域链👇
+
+```js
+data[0]Context = {
+  Scope: [AO, 匿名函数Context.AO , globalContext.VO]
+}
+```
+
+所以data[0]输出0, 1输出1
+
 # 变量对象
 
 > 变量对象是与执行上下文相关的数据作用域，存储了在上下文中定义的变量和函数声明。
@@ -1095,3 +1173,23 @@ console.log((false || foo.bar)());
 console.log((foo.bar, foo.bar)());
 ```
 
+# 立即执行函数表达式(IIFE)
+
+> 声明一个函数，并马上调用这个匿名函数就叫做立即执行函数；也可以说立即执行函数是一种语法，让你的函数在定义以后立即执行；
+
+写法👇
+
+```js
+(function () {alert("我是匿名函数")}())   //用括号把整个表达式包起来
+(function () {alert("我是匿名函数")})()  //用括号把函数包起来
+
+// 如果不在意返回值，可以加上一元操作符来通过语法检查
+!function () {alert("我是匿名函数")}() 
++function () {alert("我是匿名函数")}() 
+-function () {alert("我是匿名函数")}() 
+~function () {alert("我是匿名函数")}() 
+
+void function () {alert("我是匿名函数")}() 
+new function () {alert("我是匿名函数")}() 
+
+```

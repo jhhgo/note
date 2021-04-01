@@ -10,17 +10,12 @@
 
 <body>
   <script>
-    function foo() {
-      console.log(a)
-      console.log(b)
-      console.log(c)
-      var a = 1
-
-      function b() {}
-      var b = 2
-      c = 3
-    }
-    foo()
+    (function() {
+      console.log(1)
+    }());
+    (function() {
+      console.log(20)
+    })()
   </script>
 </body>
 
