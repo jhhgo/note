@@ -1227,3 +1227,97 @@ Foo instanceof Foo // false
 Foo instanceof Object // true
 Foo instanceof Function // true
 ```
+
+# 手动实现bind
+ 
+> 一个绑定函数也能使用new操作符创建对象：这种行为就像把原函数当成构造器。提供的 this 值被忽略，同时调用时的参数被提供给模拟函数。、
+
+当bind返回的函数作为构造函数👇
+
+```js
+var value = 2;
+
+var foo = {
+    value: 1
+};
+
+function bar(name, age) {
+  this.habit = 'shopping';
+  console.log(this.value);
+  console.log(name);
+  console.log(age);
+}
+
+bar.prototype.friend = 'kevin';
+
+var bindFoo = bar.bind(foo, 'daisy');
+
+var obj = new bindFoo('18');
+// undefined
+// daisy
+// 18
+console.log(obj.habit);
+console.log(obj.friend);
+// shopping
+// kevin
+```
+
+```js
+Function.prototype.bind = function(context, ...args) {
+
+  if (typeof this !== 'function') {
+    throw new Error('type error no function')
+  }
+
+  let self = this
+  
+  // 为了避免原函数的prototype被修改，使用一个中间函数
+  let fNOP = function(){}
+  let fBound = function(...newArgs) {
+    // 当作为构造函数使用，此时结果为true，将绑定函数的this指向该实例
+    // 当作为普通函数使用，this为window，结果为false,将绑定函数的this指向context
+    return self.apply(this instanceof fNOP?this:context,[...args, ...newArgs])
+  }
+  fNOP.prototype = this.prototype
+  // 为了继承原函数原型链上的属性，需要需改返回的函数的原型
+  fBound.prototype = new fNOP()
+  return fBound
+}
+```
+
+# 函数柯里化
+
+> 在数学和计算机科学中，柯里化是一种将使用多个参数的一个函数转换成一系列使用一个参数的函数的技术。
+
+简单理解：用闭包把参数保存起来，当参数的数量足够执行函数了，就开始执行函数。
+
+curry👇
+```js
+let sub_curry = (fn, ...args) => {
+  return (...newArgs) => {
+    return fn.apply(this, [...args, ...newArgs])
+  }
+}
+
+let curry = (fn, length) => {
+  length = length || fn.length
+  return (...args) => {
+    if (args.length < length) {
+      return curry(sub_curry(fn, ...args), length - args.length)
+    } else {
+      return fn.apply(this, args)
+    }
+  }
+}
+```
+
+```js
+function add(a, b, c, d) {
+  return a + b + c + d
+
+  let addCurry = curry(add)
+  console.log(addCurry(1, 2, 3)(4)); // 10
+  console.log(addCurry(1, 2)(3, 4)); // 10
+  console.log(addCurry(1)(2, 3, 4)); // 10
+}
+```

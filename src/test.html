@@ -10,33 +10,32 @@
 
 <body>
   <script>
-    // 第四版
-    Function.prototype.bind2 = function (context) {
+    function add(a, b, c, d) {
+      return a + b + c + d
+    }
 
-      var self = this;
-      var args = Array.prototype.slice.call(arguments, 1);
-
-      var fNOP = function () {};
-
-      var fBound = function () {
-        var bindArgs = Array.prototype.slice.call(arguments);
-        console.log(this.__proto__)
-        console.log(this.__proto__.__proto__ === fNOP.prototype)
-        console.log(this instanceof fNOP)
-        return self.apply(this instanceof fNOP ? this : context, args.concat(bindArgs));
+    let sub_curry = (fn, ...args) => {
+      return (...newArgs) => {
+        return fn.apply(this, [...args, ...newArgs])
       }
-
-      fNOP.prototype = this.prototype;
-      fBound.prototype = new fNOP();
-      return fBound;
     }
 
-    function bar() {
-      this.name = 'jt '
+
+    let curry = (fn, length) => {
+      length = length || fn.length
+      return (...args) => {
+        if (args.length < length) {
+          return curry(sub_curry(fn, ...args), length - args.length)
+        } else {
+          return fn.apply(this, args)
+        }
+      }
     }
-    let bindBar = bar.bind2()
-    let obj = new bindBar()
-    console.log(obj)
+
+    let addCurry = curry(add)
+    console.log(addCurry(1, 2, 3)(4));
+    console.log(addCurry(1, 2)(3, 4));
+    console.log(addCurry(1)(2, 3, 4));
   </script>
 </body>
 
