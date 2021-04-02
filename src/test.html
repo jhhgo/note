@@ -10,32 +10,26 @@
 
 <body>
   <script>
-    function add(a, b, c, d) {
-      return a + b + c + d
+    function Person(name, age) {
+      this.name = name
+      this.age = age
+    }
+    Person.prototype.sayName = function() {
+      console.log(this.name);
     }
 
-    let sub_curry = (fn, ...args) => {
-      return (...newArgs) => {
-        return fn.apply(this, [...args, ...newArgs])
-      }
+    function _new(fn, ...args) {
+      let obj = Object.create(fn.prototype)
+      let ret = fn.apply(obj, args)
+      return typeof ret === 'object' ? ret : obj
     }
+    let p1 = new Person('jt', 22)
+    console.log(p1);
 
 
-    let curry = (fn, length) => {
-      length = length || fn.length
-      return (...args) => {
-        if (args.length < length) {
-          return curry(sub_curry(fn, ...args), length - args.length)
-        } else {
-          return fn.apply(this, args)
-        }
-      }
-    }
-
-    let addCurry = curry(add)
-    console.log(addCurry(1, 2, 3)(4));
-    console.log(addCurry(1, 2)(3, 4));
-    console.log(addCurry(1)(2, 3, 4));
+    let p2 = _new(Person, 'jhh', 200)
+    console.log(p2);
+    p2.sayName()
   </script>
 </body>
 
