@@ -699,6 +699,130 @@ Block Formatting Context 块级格式化上下文
 
 2. 后来居上：当元素的层叠水平一致、层叠顺序相同的时候，在DOM流中处于后面的元素会覆盖前面的元素。
 
+# 居中
+
+## div水平垂直居中
+
+### 已知宽高
+
+**flex布局**
+
+```html
+<style>
+  .outer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .inner {
+    background-color: pink;
+    width: 200px;
+    height: 200px;
+  }
+</style>
+
+<body>
+  <div class="outer">
+    <div class="inner">111</div>
+  </div>
+</body>
+```
+
+**子绝父相 + margin负值**
+
+```html
+<style>
+  .outer {
+    position: relative;
+  }
+  .inner {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    margin-top: -100px;
+    margin-left: -100px;
+    top: 50%;
+    left: 50%;
+    background-color: pink;
+  }
+</style>
+```
+
+**子绝父相 + calc函数**
+
+```html
+<style>
+  .outer {
+    position: relative;
+  }
+  .inner {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    top: calc(50% - 100px);
+    left: calc(50% - 100px);
+    background-color: pink;
+  }
+</style>
+```
+
+**子绝父相 + left、right、top、bottom 0，margin auto**
+
+```html
+<style>
+  .outer {
+    position: relative;
+  }
+  .inner {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background-color: pink;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+  }
+</style>
+```
+
+### 未知宽高
+
+**子绝父相 + transform**
+
+```html
+<style>
+  .outer {
+    position: relative;
+  }
+
+  .inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+</style>
+
+```
+
+**flex + margin: auto**
+
+```html
+<style>
+  .outer {
+    display: flex;
+  }
+
+  .inner {
+    margin: auto;
+  }
+</style>
+```
+
+## 内容(文字、图片)水平垂直居中
+
 # 常见问题
 
 ## 1. 清除浮动
