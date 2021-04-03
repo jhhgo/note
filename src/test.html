@@ -24,19 +24,15 @@
 
 
 <body>
-  <ul>
-    <li>苹果</li>
-    <li>西瓜</li>
-    <li>菠萝</li>
-  </ul>
   <script>
-    let ul = document.querySelector('ul')
-    ul.addEventListener('click', function(e) {
-      console.log(e.target);
-      console.log('cur', e.currentTarget);
-      console.log('this', this);
-      console.log(111);
-    })
+    let obj = {
+      name: 'jt'
+    }
+
+    let map = new Map()
+    map.set('name', 'jt')
+    console.log(map);
+    console.log(map.entries());
   </script>
 </body>
 
