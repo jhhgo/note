@@ -126,20 +126,20 @@ function FiberNode(tag, pendingProps, key, mode) {
   this.sibling = null; // 兄弟节点
   this.index = 0;
   this.ref = null;
-  this.pendingProps = pendingProps;
-  this.memoizedProps = null;
-  this.updateQueue = null;
-  this.memoizedState = null;
+  this.pendingProps = pendingProps; // fiber新的props
+  this.memoizedProps = null; // fiber当前的Props
+  this.updateQueue = null;   // 当前fiber新的状态，useState
+  this.memoizedState = null; // fiber当前的state
   this.dependencies = null;
   this.mode = mode; // Effects
 
-  this.effectTag = NoEffect; // 当前节点更新的类型
-  this.nextEffect = null;
-  this.firstEffect = null;
-  this.lastEffect = null;
+  this.effectTag = NoEffect; // 当前节点更新的类型，如：placement 插入、update 更新、deletion 删除。
+  this.nextEffect = null;  // 下一个要更新的子节点
+  this.firstEffect = null;  // 第一个要更新的子节点
+  this.lastEffect = null; // 最后一个要更新的子节点
   this.lanes = NoLanes;
   this.childLanes = NoLanes;
-  this.alternate = null;
+  this.alternate = null; // 用于连接current树和workInProgress树
 }
 ```
 

@@ -108,6 +108,7 @@ const ReactElement = function(type, key, ref, self, source, owner, props) {
 
 ## render阶段
 
+
 深度优先依次执行fiber节点的`beginWork`和`completeWork`
 
 `beginWork()`
