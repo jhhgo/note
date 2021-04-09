@@ -67,7 +67,7 @@ fiber是一种数据结构，每个fiber节点对应一个jsx标签。包含了�
 
 ## 工作原理
 
-**双缓存**
+**双缓存原理**
 
 维护两颗树：
 
@@ -75,9 +75,12 @@ fiber是一种数据结构，每个fiber节点对应一个jsx标签。包含了�
 
 2. workInProgress树: 在内存中构建，保存的是本次的状态。
 
-每次更新时候会比对两棵树。将要更新的节点标记，连接成一个链表。然后传递给commit阶段。
+首次渲染时，不存在current树，先创建workInProgress树，然后将current指针指向这棵树。
 
-**双缓存工作流程**
+在更新阶段，会复用`current.alternate`创建workInProgress。然后比对current和jsx对象，创建workInProgress
+将要更新的节点标记，连接成一个链表。然后传递给commit阶段。
+
+**工作流程**
 
 react工作的两个阶段：
 
@@ -142,5 +145,9 @@ var mountChildFibers = ChildReconciler(false);
 
 ## completeWork
 
-```js
-```
+**首屏渲染completeWork**
+
+进入`completeWork`，根据`tag`进入不同的case，以`hostComponent`为例，会进入`createInstance`，创建当前fiber节点对应的dom实例，然后进入`appendAllChildren`将dom插入到已经创建好的dom树上，然后会将dom实例保存到fiber节点的`stateNode`属性上。
+
+**更新阶段completeWork**
+

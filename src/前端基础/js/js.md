@@ -1559,3 +1559,276 @@ es6提供的`weakMap`和`weakSet`它的键名所引用的对象均是弱引用�
 >  0.1 用二进制表示就是 0.00011001100110011……
 
 但是ECMAScript使用64位来存储一个浮点数，所以当 0.1 存下来的时候，就已经发生了精度丢失，当我们用浮点数进行运算的时候，使用的其实是精度丢失后的数。
+
+**浮点数存储**
+
+ECMA用64bit来存储一个浮点数。
+
+浮点数可以用科学计数法表示。
+
+例如0.1的二进制0.00011001100110011……可以表示为👇
+
+```js
+1 * 2^-4 * 1.1001100110011......
+```
+
+基本由3部分组成：
+
+- `(-1)^S`: 表示符号位，当S=0, 表示正数；S=1，表示负数
+
+- `(1 + Fraction)`: 这是因为所有的浮点数都可以表示为 1.xxxx * 2^xxx 的形式，前面的一定是 1.xxx，那干脆我们就不存储这个 1 了，直接存后面的 xxxxx 好了，这也就是 Fraction 的部分。
+
+- `2^E`: 如果是 1020.75，对应二进制数就是 1111111100.11，对应二进制科学计数法就是 1 * 1.11111110011 * 2^9，E 的值就是 9，而如果是 0.1 ，对应二进制是 1 * 1.1001100110011…… * 2^-4， E 的值就是 -4，也就是说，E 既可能是负数，又可能是正数。
+
+假如用 8 位字节来存储 E 这个数，如果只有正数的话，储存的值的范围是 0 ~ 254，而如果要储存正负数的话，值的范围就是 -127~127，我们在存储的时候，把要存储的数字加上 127，这样当我们存 -127 的时候，我们存 0，当存 127 的时候，存 254，这样就解决了存负数的问题。对应的，当取值的时候，我们再减去 127。
+
+IEEE754标准👇
+
+![浮点数存储](C:\Users\姜嘿嘿\Desktop\imgs\浮点数存储.png)
+
+在这个标准下：
+
+- 我们会用 1 位存储 S，0 表示正数，1 表示负数。
+- 用 11 位存储 E + bias，对于 11 位来说，bias 的值是 2^(11-1) - 1，也就是 1023。
+- 用 52 位存储 Fraction。
+
+举个例子0.1的二进制是 1 * 1.1001100110011…… * 2^-4，sign是0，E + bias是 -4 + 1023，1029用二进制表示是1111111011，Fraction是1001100110011...
+
+对于64bit的完整表示👇
+
+> 0 01111111011 1001100110011001100110011001100110011001100110011010
+
+**浮点数运算**
+
+- 对阶：把阶码调整为相同，比如 0.1 是 `1.1001100110011…… * 2^-4`，阶码是 -4，而 0.2 就是 `1.10011001100110...* 2^-3`，阶码是 -3，两个阶码不同，所以先调整为相同的阶码再进行计算，调整原则是小阶对大阶，也就是 0.1 的 -4 调整为 -3，对应变成 0.11001100110011…… * 2^-3
+
+- 尾数运算
+
+```js
+  0.1100110011001100110011001100110011001100110011001101
++ 1.1001100110011001100110011001100110011001100110011010
+————————————————————————————————————————————————————————
+ 10.0110011001100110011001100110011001100110011001100111
+```
+
+得到结果：`10.0110011001100110011001100110011001100110011001100111 * 2^-3`
+
+- 规格化：将结果规格化得到`1.0011001100110011001100110011001100110011001100110011(1) * 2^-2`，注：此时.后超过了52位，所以括号里的1要被舍弃。
+
+- 舍入处理：四舍五入对应到二进制中，就是 0 舍 1 入。因为我们要把括号里的 1 丢了，所以这里会进一，结果变成
+`1.0011001100110011001100110011001100110011001100110100 * 2^-2`
+
+- 溢出判断
+
+最终的64bit👇：
+
+> 0 01111111101 0011001100110011001100110011001100110011001100110100
+
+将他转化为10进制得到`0.30000000000000004440892098500626`
+
+# 浏览器中js事件循环机制
+
+**执行栈**
+
+当js执行到一段可执行代码时，会生成执行上下文，并压入执行栈。当执行完代码，会弹出执行上下文。
+
+**什么是事件循环？**
+
+js引擎遇到一个异步事件后并不会一直等待其返回结果，而是会将这个事件挂起，继续执行执行栈中的其他任务。当一个异步事件返回结果后，js会将这个事件加入与当前执行栈不同的另一个队列，我们称之为事件队列。被放入事件队列不会立刻执行其回调，而是等待当前执行栈中的所有任务都执行完毕， 主线程处于闲置状态时，主线程会去查找事件队列是否有任务。如果有，那么主线程会从中取出排在第一位的事件，并把这个事件对应的回调放入执行栈中，然后执行其中的同步代码...，如此反复，这样就形成了一个无限的循环。
+
+**macro task和micro task**
+
+因为异步任务之间并不相同，因此他们的执行优先级也有区别。不同的异步任务被分为两类：微任务（micro task）和宏任务（macro task）。
+
+宏任务：
+
+- `setInterval()`
+
+- `setTimeout()`
+
+微任务：
+
+- `new Promise()`: 注意传入Promise构造函数的函数是同步执行的，`Promise.prototype.then`是微任务
+
+- `new MutaionObserver()`
+
+前面我们介绍过，在一个事件循环中，异步事件返回结果后会被放到一个任务队列中。然而，根据这个异步事件的类型，这个事件实际上会被对应的`宏任务队列`或者`微任务队列`中去。并且在当前执行栈为空的时候，主线程会 查看`微任务队列`是否有事件存在。如果不存在，那么再去`宏任务队列`中取出一个事件并把对应的回到加入当前执行栈；如果存在，则会依次执行队列中事件对应的回调，直到`微任务队列`为空，然后去`宏任务队列`中取出最前面的一个事件，把对应的回调加入当前执行栈...如此反复，进入循环。
+
+我们只需记住当当前执行栈执行完毕时会立刻先处理所有`微任务队列`中的事件，然后再去`宏任务队列`中取出一个事件。同一次事件循环中，`微任务永远在宏任务之前执行`。
+
+# Generator函数
+
+## 基本使用
+
+```js
+function* example() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+var iter=example();
+iter.next();//{value:1，done:false}
+iter.next();//{value:2，done:false}
+iter.next();//{value:3，done:false}
+iter.next();//{value:undefined，done:true}
+```
+
+# 防抖和节流
+
+## 防抖
+
+原理：事件不断触发，但是在事件触发的几秒后才执行，并且以最新的事件的事件为准。即事件持续触发，但是只在几秒后执行最后一次事件的回调函数。
+
+**简单版本**
+
+```js
+function debounce(fn, wait) {
+  let timeout
+  return function(...args) {
+    clearTimeout(timeout)
+    timeout = setTimeout(fn, wait)
+  }
+}
+```
+
+**this指向**
+
+事件回调里的`this`一般指向触发的dom元素，例如👇
+
+```html
+<div></div>
+<script>
+  let div = document.querySelector('div')
+  div.onClick = function() {
+    console.log(this) // <div></div>
+  }
+</script>
+```
+
+```js
+function debounce(fn, wait) {
+  let timeout
+  return function() {
+    let context = this
+    clearTimeout(timeout)
+    timeout = setTimeout(() => {
+      fn.apply(context)
+    },wait)
+  }
+}
+```
+
+**event事件**
+
+事件回调函数接受一个`event`对象
+
+```js
+function debounce(fn, wait) {
+  let timeout
+  return function(...args) {
+    let context = this
+    timeout = setTimeout(() => {
+      fn.apply(context, args)
+    }, wait)
+  }
+}
+```
+
+**立刻执行**
+
+立刻执行函数，然后等到停止触发 n 秒后，才可以重新触发执行。
+
+```js
+function debounce(fn, wait, immediate) {
+  let timeout
+  return function(...args) {
+    let context = this
+    if (timeout) clearTimeout(timeour)
+    if (immediate) {
+      let callNow = !timeout
+      timeout = setTimeout(() => {
+        timeout = null
+      }, wait)
+      if (callNow) return fn.apply(this, args)
+    } else {
+      timeout = setTimeout(() => {
+        fn.apply(context, args)
+      }, wait)
+    }
+  }
+}
+```
+
+## 节流
+
+原理：如果你持续触发事件，每隔一段时间，只执行一次事件。
+
+**使用时间戳**
+
+>当触发事件的时候，我们取出当前的时间戳，然后减去之前的时间戳(最一开始值设为 0 )，如果大于设置的时间周期，就执行函数，然后更新时间戳为当前的时间戳，如果小于，就不执行。
+
+```js
+function throttle(fn, wait) {
+  let previous = 0
+  return function(...args) {
+    let context = this
+    let now = +new Date()
+    if (now - previous > wait) {
+      fn.apply(context, wait)
+      previous = now
+    }
+  }
+}
+```
+
+效果：第一次触发，事件立即执行。之后不断触发，每wait执行一次。
+
+**定时器**
+
+> 当触发事件的时候，我们设置一个定时器，再触发事件的时候，如果定时器存在，就不执行。直到定时器执行，然后执行函数，清空定时器，这样就可以设置下个定时器。
+
+```js
+function throttle(fn, wait) {
+  let timeout
+  return function(...args) {
+    let context = this
+    if (!timeout) {
+      timeout = setTimeout(() => {
+        timeout = null
+        fn.apply(context, args)
+      }, wait)
+    }
+  }
+}
+```
+
+效果：第一次触发不会立即执行，而是wait之后执行。
+
+**双剑合璧**
+
+要实现的效果：事件首次触发，立即执行，停止触发的时候还能再执行一次。
+
+```js
+function throttle(fn, wait) {
+  let timeout, previous = 0
+  return function(...args) {
+    let now = +new Date()
+    let remaining = wait - (now - previous)
+    let context = this
+    if (reamining < 0) {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+      previous = now
+      fn.apply(context, args)
+    } else if(!timeout) {
+      timeout = setTimeout(() => {
+        previous = now
+        timeout = null
+        fn.apply(context, args)
+      }, wait)
+    }
+  }
+}
+```
