@@ -44,7 +44,7 @@ entry支持设置单入口和多入口
 entry: './src/index.js'
 // 多入口，字符串数组。只生成一个bundle，chunk名为main
 entry: ['./src/index.js', './src/test.js']
-// 多入口，对象。有一个入口就生成几个bundle，chunk名为key值
+// 多入口，对象。有几个入口就生成几个bundle，chunk名为key值
 entry: {
   index: './src/index.js',
   test: './src/test.js'
@@ -393,7 +393,7 @@ new HtmlWebpackPlugin({
   minify: {
     // 移除空格
     collapseWhitespace: true,
-    // 移除评论
+    // 移除注释
     removeComments: true
   }
   }),

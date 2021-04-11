@@ -151,3 +151,80 @@ var mountChildFibers = ChildReconciler(false);
 
 **更新阶段completeWork**
 
+## diff算法
+
+diff算法的最终目的就是比对`current`和`jsx对象`最终生成`workInProgress`。
+
+**性能瓶颈**
+
+前后两棵树完全比对的算法的复杂程度为 O(n 3 )，其中n是树中元素的数量。
+
+**react diff策略**
+
+1. 只对同级元素进行Diff。如果一个DOM节点在前后两次更新中跨越了层级，那么React不会尝试复用他。例如交换位置不会真正的交换，而是销毁再新建。
+
+2. 两个不同类型的元素会产生出不同的树。如果元素由div变为p，React会销毁div及其子孙节点，并新建p及其子孙节点。
+
+3. 开发者可以通过 key prop来暗示哪些子元素在不同的渲染下能保持稳定。即不会销毁key标记的元素
+
+```js
+// 更新前
+<div>
+  <p key="ka">ka</p>
+  <h3 key="song">song</h3>
+</div>
+
+// 更新后
+<div>
+  <h3 key="song">song</h3>
+  <p key="ka">ka</p>
+</div>
+```
+
+如果没有key，React会认为div的第一个子节点由p变为h3，第二个子节点由h3变为p。这符合限制2的设定，会销毁并新建。
+
+但是当我们用key指明了节点前后对应关系后，React知道key === "ka"的p在更新后还存在，所以DOM节点可以复用，只是需要交换下顺序。
+
+**单一节点的diff**
+
+工作流程👇
+
+![单一节点的diff](C:\Users\姜嘿嘿\Desktop\imgs\单一节点的diff.png)
+
+结果：一定会返回一个workInProgress树的fiber节点。区别在于，是新建一个fiber节点还是复用current树的fiber节点。
+
+如何判断是否可以复用？
+
+首先判断`key`是否相同，然后判断`type`是否相同。都相同则可以复用。
+
+不可复用情况：
+
+- `child !== null`且`key`不同，此时仅删除`child`
+
+- `child !== null`且`key`相同且`type`不同，执行`deleteRemainingChildren`将`child`及其兄弟fiber都标记删除。
+
+**多节点的diff**
+
+三种情况：
+
+1. 节点更新
+
+2. 节点新增或减少
+
+3. 节点位置变化
+
+## hook
+
+
+
+
+
+
+
+
+
+
+
+
+
+**setState流程**
