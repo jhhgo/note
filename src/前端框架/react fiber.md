@@ -84,7 +84,7 @@ fiber是一种数据结构，每个fiber节点对应一个jsx标签。包含了�
 
 react工作的两个阶段：
 
-1. render(创建workInProgress树，将workInProgress传递给commit)，render阶段有两个关键的函数`beginWork`和`completeWork`
+1. render(通过diff算法创建workInProgress树，将workInProgress传递给commit)，render阶段有两个关键的函数`beginWork`和`completeWork`
 
 2. commit(将workInProgress渲染到页面上)
 
@@ -215,8 +215,161 @@ diff算法的最终目的就是比对`current`和`jsx对象`最终生成`workInP
 
 ## hook
 
+## 状态更新
 
+**大致流程**
 
+```shell
+触发状态更新(this.setState useState)
+     |
+     |
+创建update对象(dispatchAction)
+     |
+     |
+从触发更新的fiber，向上递归到root(markUpdateLaneFromFiberToRoot)
+     |
+     |
+从root调度本次更新(ensureRootIsScheduled)
+     |
+     |
+render阶段(performConcurrentWorkOnRoot | performSyncWorkOnRoot)
+     |
+     |
+commit阶段(commitRoot)     
+```
+
+首先触发状态更新，触发状态更新的方法有👇
+
+- ReactDOM.render --- HostRoot
+- this.setState --- ClassComponent
+- this.forceUpdate --- ClassComponent
+- useState --- FunctionComponent
+- useReducer --- FunctionComponent
+
+### Update对象
+
+**Update结构**
+
+由于不同类型组件工作方式不同，所以存在两种不同结构的`Update`，其中`ClassComponent`与`HostRoot`共用一套`Update`结构，`FunctionComponent`单独使用一种Update结构。
+
+`ClassComponent`与`HostRoot`的`Update`结构👇
+
+```js
+const update: Update<*> = {
+  eventTime, // 任务时间
+  lane, // 优先级，update的优先级可能是不同的
+  suspenseConfig,
+  tag: UpdateState, // 更新的类型 UpdateState | ReplaceState | ForceUpdate | CaptureUpdate
+  payload: null, // 更新挂载的数据，不同类型组件挂载的数据不同。
+                 // 对于ClassComponent，payload为this.setState的第一个传参。对于HostRoot，payload为ReactDOM.render的第一个传参。
+  callback: null, // 更新的回调函数。
+  next: null, // 与其他Update连接形成链表。
+};
+```
+
+**与fiber的联系**
+
+Fiber节点上的多个`Update`会组成链表并被包含在`fiber.updateQueue`中。
+
+Fiber节点最多同时存在两个updateQueue：
+
+- current fiber保存的updateQueue即current updateQueue
+
+- workInProgress fiber保存的updateQueue即workInProgress updateQueue
+
+在commit阶段完成页面渲染后，workInProgress Fiber树变为current Fiber树，workInProgress Fiber树内Fiber节点的updateQueue就变成current updateQueue。
+
+**fiber.updateQueue结构**
+
+ClassComponent与HostRoot使用的UpdateQueue结构如下：
+
+```js
+const queue: UpdateQueue<State> = {
+  baseState: fiber.memoizedState,
+  firstBaseUpdate: null,
+  lastBaseUpdate: null,
+  shared: {
+    pending: null,
+  },
+  effects: null,
+};
+```
+
+字段说明：
+
+- `baseState`: 本次更新前该`Fiber`节点的`state`。会基于`Update对象`和`baseState`计算更新后的`state`。
+
+- `firstBaseUpdate`与`lastBaseUpdate`: 本次更新前该`Fiber`节点已保存的`Update`。以链表形式存在，链表头为`firstBaseUpdate`，链表尾为`lastBaseUpdate`。之所以在更新产生前该`Fiber`节点内就存在`Update`，是由于某些`Update`优先级较低所以在上次`render`阶段由`Update`计算`state`时被跳过。
+
+- `shared.pending`：触发更新时，产生的`Update`会保存在s`hared.pending`中形成单向环状链表。当由Update计算`state`时这个环会被剪开并连接在`lastBaseUpdate`后面。
+
+- `effects`：数组。保存update.callback !== null的Update
+
+**updateQueue工作流程**
+
+假设有一个`fiber`刚经历`commit`阶段完成渲染。
+
+该`fiber`上有两个由于优先级过低所以在上次的`render`阶段并没有处理的`Update`。他们会成为下次更新的`baseUpdate`。
+
+我们称其为u1和u2，其中`u1.next === u2`。
+
+```js
+fiber.updateQueue.firstBaseUpdate === u1;
+fiber.updateQueue.lastBaseUpdate === u2;
+u1.next === u2;
+```
+
+我们用-->表示链表的指向：
+
+```js
+fiber.updateQueue.baseUpdate: u1 --> u2
+```
+
+现在我们在fiber上触发两次状态更新，这会产生两个新Update。
+
+我们称其为u3和u4。
+
+```js
+fiber.updateQueue.shared.pending === u3;
+u3.next === u4;
+u4.next === u3;
+```
+
+由于shared.pending是环状链表，用图表示为：
+
+```js
+fiber.updateQueue.shared.pending:   u3 --> u4 
+                                     ^      |                                    
+                                     |______|
+```
+
+更新调度完成后进入render阶段。
+
+此时shared.pending的环被剪开并连接在updateQueue.lastBaseUpdate后面：
+
+```js
+fiber.updateQueue.baseUpdate: u1 --> u2 --> u3 --> u4
+```
+
+接下来遍历`updateQueue.baseUpdate`链表，以`fiber.updateQueue.baseState`为初始state，依次与遍历到的每个`Update`计算并产生新的`state`（该操作类比Array.prototype.reduce）。
+
+在遍历时如果有优先级低的Update会被跳过。
+
+当遍历完成后获得的`state`，就是该Fiber节点在本次更新的`state`（源码中叫做`memoizedState`）。
+
+`render`阶段的`Update`操作由`processUpdateQueue`完成。
+
+state的变化在render阶段产生与上次更新不同的JSX对象，通过Diff算法产生effectTag，在commit阶段渲染在页面上。
+
+渲染完成后`workInProgress Fiber`树变为`current Fiber`树，整个更新流程结束。
+
+### Update计算机制
+
+`processUpdateQueue`
+
+主要工作：
+
+1. 将本次更新的update，连接在baseUpdate后
 
 
 
@@ -228,3 +381,42 @@ diff算法的最终目的就是比对`current`和`jsx对象`最终生成`workInP
 
 
 **setState流程**
+
+
+
+
+
+开启concurrent模式，更新会获得不同的优先级，不用的优先级以异步的方式运行。
+
+render阶段的入口根据模式的不同分为`performSyncWorkOnRoot`和`performConcurrentWorkOnRoot`
+
+触发状态更新的方法：
+
+- ReactDOM.render
+- this.setState
+- this.forceUpdate
+- useState
+- useReducer
+
+每次状态更新都会创建一个保存更新状态相关内容的对象，称之为`Update`。然后在`render`阶段的`beginWork`中会根据`Update`计算`state`
+
+完整的更新流程👇
+
+```shell
+触发状态更新(this.setState useState)
+     |
+     |
+创建update对象(dispatchAction)
+     |
+     |
+从触发更新的fiber，向上递归到root(markUpdateLaneFromFiberToRoot)
+     |
+     |
+从root调度本次更新(ensureRootIsScheduled)
+     |
+     |
+render阶段(performConcurrentWorkOnRoot | performSyncWorkOnRoot)
+     |
+     |
+commit阶段(commitRoot)     
+```

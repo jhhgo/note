@@ -1832,3 +1832,162 @@ function throttle(fn, wait) {
   }
 }
 ```
+
+# ajax
+
+Asynchronous JavaScript + XML（异步JavaScript和XML），异步发送请求无需卸载页面。
+
+## XMLHttpRequest对象
+
+### 实例方法
+
+**open(method, url, async)方法**
+
+参数：
+
+- method: 要发送的请求类型`get`、`post`
+
+- url: 请求的ulr
+
+- async: 是否异步请求
+
+作用：调用该方法并不会发送请求，而是准备一个请求以备发送
+
+**send(data)方法**
+
+参数：
+
+- data: 作为请求主体发送的数据，就算没有也要填null(对有些浏览器是必须的)
+
+作用：调用send后，请求被发送到服务端，收到响应后，响应的数据会自动填充xhr对象的属性。
+
+**setRequestHeader(header, value)**
+
+设置请求头，必须在调用`open`之后且调用`send`之间调用。
+
+### 实例属性
+
+- `status`: 响应的http状态
+- `statusText`: http状态的说明
+- `responseText`: 作为响应主体被返回的文本
+- `responseXML`: 如果响应内容的类型是`text/xml`或`application/xml`，那这个属性保存着响应数据的XML DOM文档
+- `readyState`: 表示请求/响应过程的当前活动阶段。0: 未初始化，1: 启动(调用open未调用send)，2: 发送(已调用send，还未接收到响应)，3: 接收(接收到部分响应数据)，4: 完成(接收到全部响应数据)
+- `timeout`: 设置超时时间，如果在这个时间之后还没收到响应，就会触发`ontimeout`。`ie8`以下不可用。
+
+**readystateChange事件**
+
+可以利用这个`onreadystatechange`监听`readyState的改变`👇
+
+```js
+let xhr = new XMLHttpRequest()
+xhr.onreadystatechange = function() {
+  if (xhr.readyState === 4) {
+    if((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+      // 请求成功
+      alert(xhr.responseText)
+    } else {
+      // 请求失败
+      alert(xhr.status)
+    }
+  }
+}
+```
+
+### 回调函数封装
+
+```js
+const ajax = ({
+  method = 'get',
+  url = '/',
+  data,
+  async = true
+}, callback) => {
+  let xhr = new XMLHttpRequest()
+  xhr.onreadystatechange = () => {
+    if (xhr.readyStatus === 4) {
+      if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+        let res = JSON.parse(xhr.responseText)
+        callback(res)
+      }
+    }
+  }
+  xhr.open(method, url, async)
+  // get 直接发送
+  if (method === 'get') xhr.send(null)
+  if (method === 'post') {
+    let type = typeof data
+    let header
+    if (type === 'string') {
+      header = 'application/x-www-form-urlended'
+    } else {
+      header = 'application/json'
+      data = JSON.stringify(data)
+    }
+    xhr.setRequestHeader('Content-type', header)
+    xhr.send(data)
+  }
+}
+ajax.get = (url, callback) => {
+  return ajax({url}, callback)
+}
+
+ajax.post = function (url, data, callback) {
+    return Ajax({
+        method: 'post',
+        url,
+        data,
+    }, callback)
+}
+
+ajax.get('https://www.baidu/com', (res) => {
+  console.log(res)
+})
+```
+
+### Promise封装
+
+```js
+const ajax = ({
+  method = 'get',
+  url = '/',
+  data,
+  async = true
+}) => {
+  return new Promise((resolve, reject) => {
+    let xhr = new XMLHttpRequest()
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4) {
+        if ((xhr.status >=200 && xhr.status < 300) || xhr.status === 304) {
+          let res = JSON.parse(xhr.responseText)
+          resolve(res)
+        } else {
+          reject(res.status)
+        }
+      }
+    }
+    xhr.open(method, url, data)
+    if (method === 'get') xhr.send(null)
+    if (method === 'post') {
+      let type = typeof data
+      let header
+      if (type === 'string') {
+        header = 'application/x-www-form-urlencoded' 
+      } else {
+        header = 'application/json'
+        data = JSON.stringify(data)
+      }
+      xhr.setRequestHeader('Content-type', header)
+      xhr.send(data)
+    }
+  })
+}
+
+ajax.get = url => {
+  return ajax({url})
+}
+
+ajax.get('https://www.baidu.com').then(res => {
+  console.log(resl)
+})
+```
+

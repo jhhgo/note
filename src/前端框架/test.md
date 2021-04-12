@@ -128,8 +128,8 @@ function FiberNode(tag, pendingProps, key, mode) {
   this.ref = null;
   this.pendingProps = pendingProps; // fiber新的props
   this.memoizedProps = null; // fiber当前的Props
-  this.updateQueue = null;   // 当前fiber新的状态，useState
-  this.memoizedState = null; // fiber当前的state
+  this.updateQueue = null;   // 保存了Update链表
+  this.memoizedState = null; // fiber本次的state，通过遍历updateQueue得出
   this.dependencies = null;
   this.mode = mode; // Effects
 
