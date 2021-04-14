@@ -457,31 +457,6 @@ render阶段(performConcurrentWorkOnRoot | performSyncWorkOnRoot)：这个阶段
 commit阶段(commitRoot)
 ```
 
-## 面试：说一下 ReactDOM.render()的流程
-
-1. 创建整个应用的根节点`FiberRootNode`
-
-2. `updateContainer`: 创建 update 对象
-
-3. `enqueueUpdate`: 将 update 添加到`fiber.updateQueue`上
-
-4. `shcedulUpdateOnFiber`: 调度首屏渲染的更新
-
-5. `performSyncWorkOnRoot`: 进入 render 阶段。
-
-## 面试：说一下 this.setState()的流程
-
-1. 调用`this.setState()`
-
-2. 调用`updater.enqueueSetState(this, partialState, callback, 'setState')`
-
-- this: 本次触发 setState 的 ClassComponent 实例
-- partialState: 本次的 state{}，最后会变成 Update 的 payload
-- callback: setState 的第二个参数
-
-3. 创建 Update 对象并且`update.payload = payload`
-4. 将 update 添加到`fiber.updateQueue`
-
 ## HOOK
 
 ```js
@@ -684,3 +659,171 @@ function App() {
 
 window.app = run()
 ```
+
+## schduler原理
+
+### 时间切片原理
+
+**什么是时间切片？**
+
+时间切片的目的是不阻塞主线程，而实现目的的技术手段是将一个长任务拆分成很多个不超过指定时间的小任务分散在宏任务队列中执行。
+
+简单地说就是在浏览器空闲的时候执行js。
+
+浏览器一帧中可以用于执行js的时间👇
+
+```js
+一个task(宏任务) -- 队列中全部job(微任务) -- requestAnimationFrame -- 浏览器重排/重绘 -- requestIdleCallback
+```
+
+**react是如何实现的？**
+
+`Scheduler`的时间切片功能是通过task（宏任务）实现的。`Scheduler`将需要被执行的回调函数作为`MessageChannel`的回调执行。如果当前宿主环境不支持`MessageChannel`，则使用`setTimeout`。
+
+在`render阶段`的起点，`workLoopConcurrent`中，每次遍历`workInProgress`前，都会通过Scheduler提供的`shouldYield`方法判断是否需要中断遍历，使浏览器有时间渲染👇
+
+```js
+function workLoopConcurrent() {
+  while (workInProgress !== null && !shouldYield()) {
+    performUnitOfWork(workInProgress);
+  }
+}
+```
+
+是否中断的依据，最重要的一点便是每个任务的剩余时间是否用完。在`Schdeduler`中，为任务分配的初始剩余时间为5ms。
+
+### 优先级调度
+
+> 首先我们来了解优先级的来源。需要明确的一点是，Scheduler是独立于React的包，所以他的优先级也是独立于React的优先级的。
+
+Scheduler对外暴露了一个方法`unstable_runWithPriority`
+
+这个方法接受一个`优先级`与一个`回调函数`，在回调函数内部调用获取优先级的方法都会取得第一个参数对应的优先级(所以react可以获取schduler包的优先级)👇
+
+```js
+function unstable_runWithPriority(priorityLevel, eventHandler) {
+  switch (priorityLevel) {
+    case ImmediatePriority:
+    case UserBlockingPriority:
+    case NormalPriority:
+    case LowPriority:
+    case IdlePriority:
+      break;
+    default:
+      priorityLevel = NormalPriority;
+  }
+  var previousPriorityLevel = currentPriorityLevel;
+  currentPriorityLevel = priorityLevel;
+  try {
+    return eventHandler();
+  } finally {
+    currentPriorityLevel = previousPriorityLevel;
+  }
+}
+```
+
+从以上源码中可以看出scheduler一共有5种优先级。
+
+在`React`内部凡是涉及到优先级调度的地方，都会使用`unstable_runWithPriority`
+
+举个例子：比如，我们知道`commit`阶段是同步执行的。可以看到，`commit`阶段的起点`commitRoot`方法的优先级为`ImmediateSchedulerPriority`。👇
+
+```js
+function commitRoot(root) {
+  const renderPriorityLevel = getCurrentPriorityLevel();
+  runWithPriority(
+    ImmediateSchedulerPriority,
+    commitRootImpl.bind(null, root, renderPriorityLevel),
+  );
+  return null;
+}
+```
+
+**react如何调度schduler优先级？**
+
+`Scheduler`对外暴露最重要的方法便是`unstable_scheduleCallback`。该方法用于以某个优先级注册回调函数。
+
+比如在`React`中，在`commit`阶段的`beforeMutation`阶段会调度`useEffect`的回调👇
+
+```js
+if (!rootDoesHavePassiveEffects) {
+  rootDoesHavePassiveEffects = true;
+  scheduleCallback(NormalSchedulerPriority, () => {
+    flushPassiveEffects();
+    return null;
+  });
+}
+```
+
+这里的回调便是通过`scheduleCallback`调度的，优先级为`NormalSchedulerPriority`，即`NormalPriority`。
+
+不同的优先级意味着任务的`过期时间`不同，优先级越高的优先级过期时间越短。
+
+如果一个任务的优先级是`ImmediatePriority`，对应`IMMEDIATE_PRIORITY_TIMEOUT`为-1，该任务的过期时间比当前时间还短，代表它已经过期了，需要立即执行。
+
+**按过期时间将任务分类**
+
+- 已过期任务
+- 未过期任务
+
+对应着`scheduler`中的两个队列：
+
+- timerQueue: 保存未过期任务
+- taskQueue: 保存已过期任务
+
+执行过程：
+
+- 每当有新的未就绪的任务被注册，我们将其插入`timerQueue`并根据开始时间重新排列`timerQueue`中任务的顺序。
+- 当timerQueue中有任务就绪，即``startTime`` <= c`urrentTime`，我们将其取出并加入`taskQueue`。
+- 取出`taskQueue`中最早过期的任务并执行他。
+
+为了能在O(1)复杂度找到两个队列中时间最早的那个任务，`Scheduler`使用小顶堆实现了`优先级队列`。
+
+## 异步可中断更新
+
+## batchedUpdates
+
+## 面试：说一下 ReactDOM.render()的流程
+
+1. 创建整个应用的根节点`FiberRootNode`
+
+2. `updateContainer`: 创建 update 对象
+
+3. `enqueueUpdate`: 将 update 添加到`fiber.updateQueue`上
+
+4. `shcedulUpdateOnFiber`: 调度首屏渲染的更新
+
+5. `performSyncWorkOnRoot`: 进入 render 阶段。
+
+## 面试：说一下 this.setState()的流程
+
+1. 调用`this.setState()`
+
+2. 调用`updater.enqueueSetState(this, partialState, callback, 'setState')`
+
+- this: 本次触发 setState 的 ClassComponent 实例
+- partialState: 本次的 state{}，最后会变成 Update 的 payload
+- callback: setState 的第二个参数
+
+3. 创建 Update 对象并且`update.payload = payload`
+4. 将 update 添加到`fiber.updateQueue`
+
+
+
+
+
+
+
+
+
+
+
+commit阶段
+
+- `before mutation阶段`
+
+- `mutation阶段`：在`commitMutationEffects()`中执行
+
+
+
+- `layout阶段`
