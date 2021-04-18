@@ -514,11 +514,11 @@ webpack 中的三种 hash👇
 
 **hash**
 
-hash，主要用于开发环境中，在构建的过程中，当你的项目有一个文件发现了改变，整个项目的 hash 值就会做修改(整个项目的 hash 值是一样的)，这样子，每次更新，文件都不会让浏览器缓存文件，保证了文件的更新率，提高开发效率。
+hash，主要用于开发环境中。在构建的过程中，项目每构建一次就会生成一个hash值，通过配置可可以在输出的文件名中加上哈希值，这样子，每次更新，文件都不会让浏览器缓存文件，保证了文件的更新率，提高开发效率。缺点：即使一个文件的内容没有改变，由于hash发生了变化，也会重新请求。
 
 **chunkhash**
 
-它根据不同的入口文件(Entry)进行依赖文件解析、构建对应的 chunk，生成对应的 hash 值。我们在生产环境里把一些公共库和程序入口文件区分开，单独打包构建，即一个入口代表一个 chunk。接着我们采用 chunkhash 的方式生成 hash 值，那么只要我们不改动公共库的代码，就可以保证其 hash 值不会受影响。
+它根据不同的入口文件(Entry)进行依赖文件解析、构建对应的 chunk，每个chunk有一个独立的hash值。我们在生产环境里把一些公共库和程序入口文件区分开，单独打包构建，即一个入口代表一个 chunk。接着我们采用 chunkhash 的方式生成 hash 值，那么只要我们不改动公共库的代码，就可以保证其 hash 值不会受影响。
 
 但是这个中 hash 的方法其实是存在问题的，生产环境中我们会用 webpack 的插件，将 css 代码打单独提取出来打包。这时候 chunkhash 的方式就不够灵活，因为只要同一个 chunk 里面的 js 修改后，css 的 chunk 的 hash 也会跟随着改动。因此我们需要 contenthash。
 
@@ -567,6 +567,12 @@ output: {
   ]
 }
 ```
+
+**几种情况**
+
+1. 如果是默认导出，即使文件中没有引用，也不会被tree shraking
+
+2. 导入的时候函数，效果好，可以tree shrking
 
 ### code split
 
@@ -659,7 +665,7 @@ externals用于防止将某些 import 的包(package)打包到 bundle 中，而�
 
 具体配置👉[externals](https://www.webpackjs.com/configuration/externals/)
 
-例如，从CDN引入jquer，而不是将其打包
+例如，从CDN引入jquery，而不是将其打包
 
 ```html
 <!-- index.html -->
@@ -679,7 +685,8 @@ import $ from 'jquery'
 console.log($)
 ```
 
-## webpack打包流程
+## 面试题
+### webpack打包流程
 
 1. 初始化参数：从配置文件`webpack.config.js`和 Shell 语句中读取与合并参数,得出最终的参数`options`。
 
@@ -694,5 +701,132 @@ console.log($)
 6. 输出资源：根据入口和模块之间的依赖关系,组装成一个个包含多个模块的 Chunk,再把每个 Chunk 转换成一个单独的文件加入到输出列表,这步是可以修改输出内容的最后机会。
 
 7. 输出完成：在确定好输出内容后,根据配置确定输出的路径和文件名,把文件内容写入到文件系统。
+
 在以上过程中,Webpack 会在特定的时间点广播出特定的事件,插件在监听到感兴趣的事件后会执行特定的逻辑,并且插件可以调用 Webpack 提供的 API 改变 Webpack 的运行结果。
 
+### 用过哪些loader、plugins？
+
+### 说一下webpack的配置
+
+- `entry`: webpack的打包入口
+
+  - `单入口`：值为字符串，chunk名为`main`
+  - `多入口`：字符串数组或者对象。字符串数组时只有一个chunk。对象输出多个chunk，chunk名为key值
+
+- `loader`: webpack 本身只能处理.js 文件，当 webpack 不清楚对于一些文件如何处理就会求助于 loader。简单地说，loader 作用在于解析文件，将 webpack 无法处理的非 js 文件，处理成 webpack 能够处理的模块
+
+- `mode`：指定环境是生产还是开发
+
+- `plugins`
+
+- `output`: 指示 webpack 如何去输出
+
+### 如何编写一个plugins？
+
+一个example👇
+
+```js
+class MyExampleWebpackPlugin {
+  // 定义 `apply` 方法，接收一个apply方法
+  apply(compiler) {
+    // 指定要追加的事件钩子函数
+    compiler.hooks.compile.tapAsync(
+      'afterCompile',
+      (compilation, callback) => {
+        console.log('This is an example plugin!');
+        console.log('Here’s the `compilation` object which represents a single build of assets:', compilation);
+
+        // 使用 webpack 提供的 plugin API 操作构建结果
+        compilation.addModule(/* ... */);
+
+        callback();
+      }
+    );
+  }
+}
+```
+
+webpack在运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在合适的时机通过 Webpack 提供的 API 改变输出结果。因为plugin的使用是通过`new`一个plugin实例，可以通过`es6`的`class`编写一个插件，在class中定义`apply`方法，apply方法接收一个`complier`实例，然后基于该实例注册事件。 
+
+
+### webpack生产环境优化
+
+1. 缓存，contentHash。当文件发生变化时才重新请求，否则从内存中读取。
+2. Tree Shaking。
+3. 压缩代码	
+4. 分割代码 code split
+5. 提取公共代码
+6. CDN加速。在构建过程中，将引用的静态资源路径修改为CDN上对应的路径。可以利用webpack对于`output`参数和各loader的`publicPath`参数来修改资源路径。
+
+### webpack开发环境优化
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## babel
+
+**什么是AST**
+
+AST抽象语法树，是源代码的抽象语法结构的树状表现形式。
+
+**js解释过程**
+
+词法分析 -> 语法分析-> 语法树
+
+- 词法分析： 将字符流转换为记号流(tokens)，它会读取我们的代码然后按照一定的规则合成一个个的标识
+
+比如说：`var a = 2` ，这段代码通常会被分解成 `var、a、=、2`
+
+```js
+[
+  { type: 'Keyword', value: 'var' },
+  { type: 'Identifier', value: 'a' },
+  { type: 'Punctuator', value: '=' },
+  { type: 'Numeric', value: '2' },
+]
+```
+
+- 语法分析：将词法分析出来的数组转换成树的形式，同时验证语法。语法如果有错的话，抛出语法错误。
+
+```js
+{
+  ...
+  "type": "VariableDeclarator",
+  "id": {
+    "type": "Identifier",
+    "name": "a"
+  },
+  ...
+}
+```
+
+- 语法树AST
+
+### babel原理，ES6 -> ES5
+
+- babylon 进行解析js得到 AST
+- plugin 用 babel-traverse 对 AST 树进行遍历转译,得到新的AST树
+- 用 babel-generator 通过 AST 树生成 ES5 代码

@@ -11,10 +11,15 @@
 
 
 <body>
+  <div style="width: 100vw;height: 100vh;">1</div>
   <script>
-    let num = 23
-    let num1 = ~num
-    console.log(num1);
+
+    function _new(fn, ...args) {
+      let obj = Object.create(fn.prototype)
+      let res = fn.apply(obj, args)
+      return typeof res === 'object' ? res : obj
+    }
+
   </script>
 </body>
 

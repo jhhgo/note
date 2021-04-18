@@ -38,7 +38,7 @@
 
 > v-if 是“真正”的条件渲染，因为它会确保在切换过程中条件块内的事件监听器和子组件适当地被销毁和重建。
 > v-if 也是惰性的：如果在初始渲染时条件为假，则什么也不做——直到条件第一次变为真时，才会开始渲染条件块。
-> 相比之下，v-show 就简单得多——不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS 进行切换。
+> 相比之下，v-show 就简单得多——不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS 进行切换`display: none`。
 > 一般来说，v-if 有更高的切换开销，而 v-show 有更高的初始渲染开销。因此，如果需要非常频繁地切换，则使用 v-show 较好；如果在运行时条件很少改变，则使用 v-if 较好。
 
 ## options
@@ -320,7 +320,23 @@ mutaition 和 action 类似，不同在于：
 
 ## 响应式原理
 
-> vue 通过数据劫持和发布订阅者模式实现双向数据绑定。通过`Object.defineProperty()`实现数据劫持，在使用属性时，触发`getter`进行依赖收集（收集 watcher）（dep.depend() -> watcher.addDep() -> 将 watcher 添加到 dep.subs，并将 dep 添加到 watcher.depIds）
+Vue是通过数据劫持结合发布-订阅模式的方式，实现的双向绑定。通过Object.defineProperty()来劫持属性的，使用属性的时候触发getter函数，收集依赖(向dep.subs添加watcher)；修改属性的时候触发setter函数(调用dep.notify通知)，触发相应的回调。
+
+一个data中的属性对应一个dep实例，dep实例中有一个subs数组，保存了多个watcher(依赖这个属性的表达式)
+一个表达式对应一个watcher实例，watcher实例有一个deps(保存了依赖的多个dep,例如a.b)。
+当this.xxx变化时。触发setter，调用`dep.notify`，通知所有subs数组中的watcher，执行wathcer.update。
+
+**Compiler、Observer、watcher**
+
+1. Observer 对数据的属性进行递归遍历，使用Object.defineProperty进行数据劫持。
+2. Compiler 用于将模板编译为渲染函数，并渲染视图页面
+  - parse使用正则等方式解析template中的指令，class，style等数据，生成AST（抽象语法树）
+  - optimize进行优化，标记静态节点，该节点会跳过diff
+  - generate，把AST转化为渲染函数，渲染函数用于生成虚拟DOM
+3. Watcher 是Observer和Compiler之间通信的桥梁
+  - 自身实例化的时候，调用getter函数，向deps添加watch(依赖收集)
+  - 当数据修改时，调用setter函数，调用deps.notify，执行watch的update函数
+  - 执行watch的update函数，重新生成虚拟DOM，并进行Diff对页面进行修改
 
 ### Dep 和 Watcher
 

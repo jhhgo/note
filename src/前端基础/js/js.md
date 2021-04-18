@@ -122,7 +122,7 @@ function flatter(arr) {
   }, [])
 }
 
-// [].concat(...arr)
+// arr = [].concat(...arr)可以铺平一层
 function flatter(arr) {
   while (arr.some((item) => Array.isArray(item))) {
     arr = [].concat(...arr)
@@ -810,7 +810,7 @@ function checkscope(){
 }
 
 var foo = checkscope();
-foo();
+foo(); // local scope
 ```
 
 **执行上下文栈变化情况👇**
@@ -849,9 +849,9 @@ for (var i = 0; i < 3; i++) {
   };
 }
 
-data[0]();
-data[1]();
-data[2]();
+data[0](); // 3
+data[1](); // 3
+data[2](); // 3
 ```
 
 全局上下文的VO👇

@@ -439,9 +439,8 @@ var letterCombinations = function (digits) {
 ```
 
 - 递归出口：
-  1. stack 长度为 4
-  2. 输入字符串取尽
-  3. 当 stack 正好为 4 并且输入字符串取尽时，表示这是一个正确的 IP 地址，push 到 res 中
+  1. stack 长度为 4 或者字符串取尽
+  2. 当 stack 正好为 4 并且输入字符串取尽时，表示这是一个正确的 IP 地址，push 到 res 中
 - 筛选条件：ip 小于 256 且当 ip 为两位时不能以 0 开头
 
 ```js
@@ -454,6 +453,7 @@ var restoreIpAddresses = function (s) {
       }
       return
     }
+     // IP只能是三位，所以循环3次
     for (let i = 1; i < 4; i++) {
       let ip = s.substr(index + 1, i)
       if (parseInt(ip) < 256 && (ip === '0' || !ip.startsWith('0'))) {
