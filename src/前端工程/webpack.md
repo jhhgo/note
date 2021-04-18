@@ -727,7 +727,7 @@ console.log($)
 
 ```js
 class MyExampleWebpackPlugin {
-  // 定义 `apply` 方法，接收一个apply方法
+  // 定义 `apply` 方法，接收一个compiler对象
   apply(compiler) {
     // 指定要追加的事件钩子函数
     compiler.hooks.compile.tapAsync(
