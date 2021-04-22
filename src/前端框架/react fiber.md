@@ -67,6 +67,36 @@ fiber 架构相比于老架构多了一个`Scheduler`调度器。可以用来调
 
 fiber 是一种数据结构，每个 fiber 节点对应一个 jsx 标签。包含了节点的信息比如类型、对应的 dom 节点等。
 
+```js
+function FiberNode(tag, pendingProps, key, mode) {
+  this.tag = tag; //标识当前fiber的类型
+  this.key = key; 
+  this.elementType = null;
+  this.type = null; // 'div' | 'h1' | Component
+  this.stateNode = null; // dom实例
+
+  this.return = null; // 父节点
+  this.child = null; // 子节点
+  this.sibling = null; // 兄弟节点
+  this.index = 0;
+  this.ref = null;
+  this.pendingProps = pendingProps; // fiber新的props
+  this.memoizedProps = null; // fiber当前的Props
+  this.updateQueue = null;   // 保存了Update链表
+  this.memoizedState = null; // fiber本次的state，通过遍历updateQueue得出
+  this.dependencies = null;
+  this.mode = mode; // Effects
+
+  this.effectTag = NoEffect; // 当前节点更新的类型，如：placement 插入、update 更新、deletion 删除。
+  this.nextEffect = null;  // 下一个要更新的子节点
+  this.firstEffect = null;  // 第一个要更新的子节点
+  this.lastEffect = null; // 最后一个要更新的子节点
+  this.lanes = NoLanes;
+  this.childLanes = NoLanes;
+  this.alternate = null; // 用于连接current树和workInProgress树
+}
+```
+
 ## 工作原理
 
 **双缓存原理**

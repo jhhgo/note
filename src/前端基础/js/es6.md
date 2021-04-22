@@ -4,11 +4,15 @@
 
 ### 1. 1 特性
 
-#### 1.1.1 不存在变量提升,变量不可以在声明前使用
-#### 1.1.2 不允许重复声明变量 let不允许在相同作用域内，重复声明同一个变量
-#### 1.1.3 暂时性死区
+1. 不存在变量提升,变量不可以在声明前使用
+2. 不允许重复声明变量 let不允许在相同作用域内，重复声明同一个变量
+3. 暂时性死区：在代码块内，如果存在let命令，那么在使用let命令声明变量之前，该变量都是不可用的
 
-在代码块内，如果存在let命令，那么在使用let命令声明变量之前，该变量都是不可用的
+```js
+//ReferenceError: Cannot access 'a' before initialization
+console.log(a)
+let a = 1
+```
 
 ## 2. 块级作用域
 
@@ -387,9 +391,9 @@ function log(x, y = 'World') {
   console.log(x, y);
 }
 
-log('Hello') // Hello World
-log('Hello', 'China') // Hello China
-log('Hello', '') // Hello
+console.log('Hello') // Hello World
+console.log('Hello', 'China') // Hello China
+console.log('Hello', '') // Hello
 ```
 
 惰性求值
@@ -490,7 +494,7 @@ add(2, 5, 3) // 10
 ```
 
 	2. rest 参数之后不能再有其他参数（即只能是最后一个参数），否则会报错 
- 	3.  函数的`length`属性，不包括 rest 参数 
+	3.  函数的`length`属性，不包括 rest 参数 
 
 ### 代替arguments
 
@@ -594,7 +598,7 @@ foo.bind({}).name // "bound foo"
 
 ### 基本用法
 
-​	1.es6允许使用箭头（=>）定义函数
+1.es6允许使用箭头（=>）定义函数
 
 ```javascript
 var f = v => v;
@@ -605,7 +609,7 @@ var f = function (v) {
 };
 ```
 
-​	2.如果箭头函数不需要参数或需要多个参数，就使用一个圆括号代表参数部分 
+2.如果箭头函数不需要参数或需要多个参数，就使用一个圆括号代表参数部分 
 
 ```javascript
 // 等同于
@@ -618,7 +622,7 @@ var sum = function(num1, num2) {
 };
 ```
 
- 3. 如果箭头函数的代码块部分多于一条语句，就要使用大括号将它们括起来，并且使用`return`语句返回 
+3. 如果箭头函数的代码块部分多于一条语句，就要使用大括号将它们括起来，并且使用`return`语句返回 
 
     ```javascript
     var sum = (num1, num2) => { return num1 + num2; }
@@ -666,6 +670,15 @@ var sum = function(num1, num2) {
     ```
 
     ​	（2）不可以使用`yield`命令，因此箭头函数不能用作`Generator`函数
+    
+### 与普通函数的区别
+
+1. 箭头函数没有自己的this，箭头函数的this在函数定义时就已经确定，为外层执行环境的this。
+2. call apply bind无法改变this指向
+3. 不能作为构造函数使用
+4. 没有arguments
+5. 没有原型对象prototype
+6. 不能作为generator函数
 
 ### 不适用场合
 

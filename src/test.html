@@ -6,20 +6,50 @@
   <meta name="viewport" content="width=device-width">
   <title>JS Bin</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    .aside{
+      width: 30vw;
+      height: 100vh;
+      background-color: pink;
+      float: left;
+    }
+    .main {
+      height: 100vh;
+      background-color: #4cda60;
+      overflow: hidden;
+    }
   </style>
 </head>
 
 
 <body>
-  <div style="width: 100vw;height: 100vh;">1</div>
   <script>
-
-    function _new(fn, ...args) {
-      let obj = Object.create(fn.prototype)
-      let res = fn.apply(obj, args)
-      return typeof res === 'object' ? res : obj
+    function Person(name, age) {
+      this.name = name
+      this.age = age
     }
+    Person.prototype.sayName = function() {
+      console.log(this.name);
+    }
+    function Student(name, age, school) {
+      Person.call(this, name, age)
+      this.school = school
+    }
+    Student.prototype = Object.create(Person.prototype)
+    Student.prototype.constructor = Student
 
+    function _instanceof(left, right) {
+      let leftProto = left.__proto__
+      let rightProto = right.prototype
+      while (leftProto) {
+        if (leftProto === rightProto) return true
+        leftProto = leftProto.__proto__
+      }
+      return false
+    }
   </script>
 </body>
 

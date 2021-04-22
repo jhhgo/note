@@ -9,7 +9,7 @@
 5. String
 6. Symbol
 7. Object
-8. Binint
+8. Bigint
 
 ### 1.1 typeof 操作符
 

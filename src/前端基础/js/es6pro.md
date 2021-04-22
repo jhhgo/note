@@ -173,3 +173,59 @@ map.set({}, 'value')
 **弱引用**
 
 指的是不被在引用计数中被计数的引用。（当引用次数为0，会回收内存）
+
+# Promise
+
+## Promise.prototype.finally(callback)
+
+无论promise状态是`fulfilled`还是`rejected`，都会执行callback
+
+## Promise.all
+
+将多个 Promise 实例，包装成一个新的 Promise 实例
+
+```js
+// 如果数组项不是promise对象，会先调用Promise.resolve转换为promise
+const p = Promise.all([p1, p2, p3])
+```
+
+**p的状态**
+
+1. 只有`p1`、`p2`、`p3`的状态都变为`fulfilled`时，`p`的状态才是`fulfilled`。此时p1、p2、p3的返回值组成一个数组，传递给p的回调函数。
+2. 只要p1、p2、p3之中有一个被rejected，p的状态就变成rejected，此时第一个被reject的实例的返回值，会传递给p的回调函数。
+
+**手写Promise.all**
+
+```js
+Promise.prototype.all = function(promises) {
+	let result = []
+	let count = 0
+	return new Promise((resolve, reject) => {
+		promises.forEach(promise => {
+			Promise.resolve(promise).then(value => {
+				count++
+				result[i] = value
+				if (count === promises.length) return resolve(result)
+			}, error => {
+				return reject(error)
+			})
+		})
+	})
+}
+```
+
+## Promise.race
+
+同样是将多个 Promise 实例，包装成一个新的 Promise 实例
+
+```js
+const p = Promise.race([p1, p2, p3]);
+```
+
+只要p1、p2、p3之中有一个实例率先改变状态，p的状态就跟着改变。那个率先改变的 Promise 实例的返回值，就传递给p的回调函数。
+
+## Promise.allSettled
+
+## Promise.any
+
+方法接受一组 Promise 实例作为参数，包装成一个新的 Promise 实例返回。只要参数实例有一个变成`fulfilled`状态，包装实例就会变成`fulfilled`状态；如果所有参数实例都变成`rejected`状态，包装实例就会变成`rejected`状态。
