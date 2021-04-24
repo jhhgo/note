@@ -140,7 +140,9 @@ react 工作的两个阶段：
 
 这个阶段主要任务是，通过 diff 算法比对`current`和`jsx对象`，生成新的`workInProgress`。并对需要更新的节点打上 effectTag 标记，并将这些节点以链表的形式组织起来，交给`commitRoot`去更新。
 
-## beginWork
+## render阶段
+
+### beginWork
 
 beginWork 的主要目的就是 workInProgress 树。区别在于，首屏渲染不存在 current，直接创建一颗 workInProgress，而更新阶段需要通过 diff 比对 current 与 jsx 对象，然后创建 workInProgress
 
@@ -185,7 +187,7 @@ var mountChildFibers = ChildReconciler(false)
 
 进入`beginWork`，current 存在，判断当前节点是否有变化。没有变化的话直接根据 current 克隆一个子 fiber 节点。有变化进入`update`流程，进入`reconcile`流程，此时会为有变化的 fiber 节点打上标记(`effectTag`)
 
-## completeWork
+### completeWork
 
 **首屏渲染 completeWork**
 
@@ -193,7 +195,7 @@ var mountChildFibers = ChildReconciler(false)
 
 **更新阶段 completeWork**
 
-## diff 算法
+### diff 算法
 
 diff 算法的最终目的就是比对`current`和`jsx对象`最终生成`workInProgress`。
 
@@ -254,6 +256,100 @@ diff 算法的最终目的就是比对`current`和`jsx对象`最终生成`workIn
 2. 节点新增或减少
 
 3. 节点位置变化
+
+## commit阶段
+
+### beforeMutation
+
+1. 调用`getSnapshotBeforeUpdate`生命周期钩子，此时页面还没有可见的更新。
+2. 调度`useEffect`
+
+### mutation
+
+`mutation`阶段会遍历`effectList`(要更新的fiber链表)，依次执行`commitMutationEffects`，该方法的主要工作为“根据effectTag调用不同的处理函数处理Fiber。
+
+**commitMutationEffects**
+
+commitMutationEffects会遍历effectList，对每个Fiber节点执行如下三个操作：
+
+1. 根据ContentReset effectTag重置文字节点
+2. 更新ref
+3. 根据effectTag分别处理，其中effectTag包括(Placement | Update | Deletion | Hydrating)
+
+- placement effect
+
+当Fiber节点含有Placement effectTag，意味着该Fiber节点对应的DOM节点需要插入到页面中。调用的方法为commitPlacement。
+
+`commitPlacement`的工作分3步：
+
+1. 获取父级`dom`节点
+
+```js
+const parentFiber = getHostParentFiber(finishedWork) //finishedWork为传入的fiber节点
+const parentStateNode = parentFiber.stateNode
+```
+
+2. 获取兄弟`dom`节点
+
+```js
+const before = getHostSibling(finishedWork);
+```
+
+3. 根据DOM兄弟节点是否存在决定调用`parentNode.insertBefore`或`parentNode.appendChild`执行DOM插入操作。
+
+```js
+if (isContainer) {
+  insertOrAppendPlacementNodeIntoContainer(finishedWork, before, parent);
+} else {
+  insertOrAppendPlacementNode(finishedWork, before, parent);
+}
+```
+
+- update effect
+
+当Fiber节点含有`Update effectTag`，意味着该Fiber节点需要更新。调用的方法为`commitWork`，他会根据`Fiber.tag`分别处理。两种情况👇
+
+1. FunctionComponent
+
+当fiber.tag为`FunctionComponent`，会调用`commitHookEffectListUnmount`。该方法会遍历`effectList`，执行所有`useLayoutEffect hook`的销毁函数。
+
+2. HostComponent 
+
+当`fiber.tag`为`HostComponent`，会调用`commitUpdate`。
+
+最终会在updateDOMProperties (opens new window)中将render阶段 completeWork (opens new window)中为Fiber节点赋值的updateQueue对应的内容渲染在页面上。
+
+- deletion effect
+
+当`Fiber`节点含有`Deletion effectTag`，意味着该Fiber节点对应的DOM节点需要从页面中删除。调用的方法为`commitDeletion`。
+
+该方法会执行如下操作：
+
+1. 递归调用Fiber节点及其子孙Fiber节点中fiber.tag为ClassComponent的componentWillUnmount (opens new window)生命周期钩子，从页面移除Fiber节点对应DOM节点
+2. 解绑ref
+3. 调度useEffect的销毁函数
+
+### layout
+
+该阶段之所以称为layout，因为该阶段的代码都是在DOM渲染完成（mutation阶段完成）后执行的。
+
+该阶段触发的生命周期钩子和hook可以直接访问到已经改变后的DOM，即该阶段是可以参与DOM layout的阶段。
+
+与前两个阶段类似，layout阶段也是遍历effectList，执行函数。具体执行的函数是commitLayoutEffects。
+
+**commitLayoutEffects**
+
+commitLayoutEffects一共做了两件事：
+
+1. commitLayoutEffectOnFiber（调用生命周期钩子和hook相关操作）
+2. commitAttachRef（赋值 ref）
+
+**commitLayoutEffectOnFiber**
+
+`commitLayoutEffectOnFiber`方法会根据`fiber.tag`对不同类型的节点分别处理
+
+- 对于`ClassComponent`，他会通过`current === null?`区分是`mount`还是`update`，调用c`omponentDidMount`或`componentDidUpdate` 。
+- 对于`FunctionComponent`及相关类型，他会调用`useLayoutEffect hook`的回调函数，调度`useEffect`的销毁与回调函数
 
 ## 状态更新
 
