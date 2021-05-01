@@ -41,7 +41,7 @@ React.createElement(App, null)
 
 组件可以接受一个参数`props`。
 
-```html
+```jsx
 <div id="app"></div>
 ```
 
@@ -653,7 +653,7 @@ redux是状态管理工具。可以用来进行兄弟组件的通信。
 - store：Store 就是保存数据的地方，你可以把它看成一个容器。整个应用只能有一个 Store。
 
   1. `getState()`方法获取某个时间点的 state
-  2. `dispatch(action)`用户操作导致dispatch(action)调用，分发action。内部会调用`reducer`更新状态
+  2. `dispatch(action)`用户操作导致`dispatch(action)`调用，分发`action`。内部会调用`reducer`更新状态
   3. `subscribe()`注册监听器
 
 **基本使用**
