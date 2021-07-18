@@ -11,50 +11,20 @@
       padding: 0;
     }
 
-    .aside {
-      width: 30vw;
-      height: 100vh;
-      background-color: pink;
-      float: left;
-    }
-
-    .main {
-      height: 100vh;
-      background-color: #4cda60;
-      overflow: hidden;
+    p {
+      font-size: 20px;
+      line-height: 1.5;
+      word-break: break-all;
     }
   </style>
 </head>
 
 
 <body>
+  <p>
+    akjbakcjbaskbkajsd;aljsdlakjsdlaksjdaljsdlakjsdlaksjdaljsdlakjsdlaksjdaljsdlakjsdlaksjdaljsdlakjsdlaksjd
+  </p>
   <script>
-
-    async function print(str) {
-      console.log('red')
-      await sleep(10000)
-      console.log('yellow')
-      await sleep(2000)
-      console.log('green')
-      await sleep(5000)
-    }
-
-    function sleep(time) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve()
-        }, time)
-      })
-    }
-
-    async function go() {
-      for (let i=0;i<5;i++) {
-        await print()
-      }
-    }
-
-    go()
-
   </script>
 </body>
 
