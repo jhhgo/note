@@ -5,39 +5,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>JS Bin</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-    }
-
-    .wrap {
-      width: 94px;
-      height: 94px;
-      border: 1px solid black;
-      box-sizing: border-box;
-      background-size: cover;
-      margin-bottom: 10px;
-      background-image: url(https://img.alicdn.com/imgextra/i1/12181893/O1CN01zdQeGO1Pr2Reidrm7_!!0-saturn_solar.jpg_468x468q75.jpg_.webp);
-    }
-
-    .wrap1 {
-      width: 94px;
-      height: 94px;
-      border: 1px solid black;
-      box-sizing: border-box;
-      background-size: cover;
-      background-image: url(https://img.alicdn.com/imgextra/i1/12181893/O1CN01zdQeGO1Pr2Reidrm7_!!0-saturn_solar.jpg_468x468q75.jpg_.webp);
-    }
-  </style>
+  <style></style>
 </head>
 
-
 <body>
-  <div class="wrap"></div>
-  <div class="wrap1"></div>
-
+  <p id="p">Example: <i>italic</i> and <b>bold</b>
+  </p>
+  From <input type="number" id="start" value=1 /> - To <input type="number" id="end" /> <button id="button">click
+    me</button>
   <script>
+    button.onclick = () => {
+      const range = new Range()
+      range.setStart(p, start.value)
+      range.setEnd(p, end.value)
+
+      // 应用选择，后文有解释
+      document.getSelection().removeAllRanges();
+      document.getSelection().addRange(range);
+    }
+
+    const range = new Range()
+    range.setStart(p.firstChild, 2)
+    range.setEnd(p.querySelector('b').firstChild, 3)
+    document.getSelection().addRange(range);
   </script>
 </body>
 
