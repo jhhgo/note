@@ -11,7 +11,7 @@ redux是状态管理工具。可以用来进行兄弟组件的通信。
 - 一个组件需要改变全局状态
 - 一个组件需要改变另一个组件的状态
 
-- action：用户操作时，分发一个action，表示state药品发生变化了
+- action：用户操作时，分发一个action，表示state要发生变化了
 
   1. 包含一个 type 字段，常被定义为字符串常量，表示要执行的动作。
   2. 其他结构完全自定义，通常用来传递数据，建议尽量减少在 action 中传递的数据
@@ -104,6 +104,7 @@ const createStore = (reducer) => {
 
 ```js
 // action.js
+
 export const CHANGE_CHANNEL = 'change_channel'
 // action生成函数
 export const changeChannel = (channel) => ({
@@ -114,6 +115,7 @@ export const changeChannel = (channel) => ({
 
 ```js
 // reducer.js
+
 import { CHANGE_CHANNEL } from './action.js'
 // combineReducers用来合并多个reducer
 import { combineReducers } from 'redux'
@@ -140,6 +142,7 @@ export default rootReducer
 
 ```js
 // index.js
+
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { createStore } from 'redux'

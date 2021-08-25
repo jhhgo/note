@@ -8,27 +8,6 @@
   <style></style>
 </head>
 
-<body>
-  <p id="p">Example: <i>italic</i> and <b>bold</b>
-  </p>
-  From <input type="number" id="start" value=1 /> - To <input type="number" id="end" /> <button id="button">click
-    me</button>
-  <script>
-    button.onclick = () => {
-      const range = new Range()
-      range.setStart(p, start.value)
-      range.setEnd(p, end.value)
-
-      // 应用选择，后文有解释
-      document.getSelection().removeAllRanges();
-      document.getSelection().addRange(range);
-    }
-
-    const range = new Range()
-    range.setStart(p.firstChild, 2)
-    range.setEnd(p.querySelector('b').firstChild, 3)
-    document.getSelection().addRange(range);
-  </script>
-</body>
+<body contenteditable="true"></body>
 
 </html>
