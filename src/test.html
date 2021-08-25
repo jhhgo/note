@@ -9,25 +9,25 @@
 </head>
 
 <body>
-  <p id="p">Example: <i>italic</i> and <b>bold</b>
-  </p>
-  From <input type="number" id="start" value=1 /> - To <input type="number" id="end" /> <button id="button">click
-    me</button>
+  <p id="p">Select me: <i>italic</i> and <b>bold</b></p>
+
+  Cloned: <span id="cloned"></span>
+  <br>
+  As text: <span id="astext"></span>
   <script>
-    button.onclick = () => {
-      const range = new Range()
-      range.setStart(p, start.value)
-      range.setEnd(p, end.value)
+    document.onselectionchange = function () {
+      let selection = document.getSelection();
 
-      // 应用选择，后文有解释
-      document.getSelection().removeAllRanges();
-      document.getSelection().addRange(range);
-    }
+      cloned.innerHTML = astext.innerHTML = "";
 
-    const range = new Range()
-    range.setStart(p.firstChild, 2)
-    range.setEnd(p.querySelector('b').firstChild, 3)
-    document.getSelection().addRange(range);
+      // 从范围复制 DOM 节点（这里我们支持多选）
+      for (let i = 0; i < selection.rangeCount; i++) {
+        cloned.append(selection.getRangeAt(i).cloneContents());
+      }
+
+      // 获取为文本形式
+      astext.innerHTML += selection;
+    };
   </script>
 </body>
 
