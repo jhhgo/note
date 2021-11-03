@@ -8,26 +8,11 @@
   <style></style>
 </head>
 
-<body>
-  <p id="p">Select me: <i>italic</i> and <b>bold</b></p>
-
-  Cloned: <span id="cloned"></span>
-  <br>
-  As text: <span id="astext"></span>
+<body style="height: 100%;width: 100%;" contenteditable="true" >
+  <span>
+    <p>123</p>
+  </span>
   <script>
-    document.onselectionchange = function () {
-      let selection = document.getSelection();
-
-      cloned.innerHTML = astext.innerHTML = "";
-
-      // 从范围复制 DOM 节点（这里我们支持多选）
-      for (let i = 0; i < selection.rangeCount; i++) {
-        cloned.append(selection.getRangeAt(i).cloneContents());
-      }
-
-      // 获取为文本形式
-      astext.innerHTML += selection;
-    };
   </script>
 </body>
 
