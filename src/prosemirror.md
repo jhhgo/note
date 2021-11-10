@@ -33,7 +33,9 @@ const view = new EditorView(document.querySelector('#editor'), {state})
 
 prosemirror定义了它自己数据结构来表示document内容，类似虚拟dom？
 
-**Documents的结构**
+**虚拟dom**
+
+Prosemirror使用了虚拟dom的方式来表示Documents
 
 Prosemirror的Documents的结构和浏览器的DOM结构相似，都是一样的递归的树状结构。但在存储内联元素时，prosemirror和浏览器dom有点不同
 
@@ -64,6 +66,21 @@ prosemirror的结构👇
 1. 允许我们使用字符的偏移量而不是一个树节点的路径来表示其所处段位中的位置
 2. 使得一些诸如分隔字符串、改变内容样式的操作变得简单
 3. 每个document都只有一种数据结构表达方式，相邻的文本节点的相同的marks会被合并在一起(上面相邻的strong)，marks的顺序由`schema`约束
+
+**document数据结构**
+
+一个document的数据结构看起来像这样👇
+
+![document结构](./img/prosemirror-3.png)
+
+一个doc实际上就是一个node节点（顶层node），content属性存储子node数组
+
+属性：
+
+- `type`: 由schema创建，可以知道node的名字以及支持的attributes属性
+- `content`: nodes数组，存储子节点
+- `marks`: 存储类似<b>、<em>
+- `attrs`:
 
 ### transactions
 
