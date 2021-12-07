@@ -79,7 +79,7 @@ prosemirror的结构👇
 
 - `type`: 由schema创建，可以知道node的名字以及支持的attributes属性
 - `content`: nodes数组，存储子节点
-- `marks`: 存储类似<b>、<em>
+- `marks`: 存储类似`<b>`、`<em>`
 - `attrs`:
 
 ### transactions
@@ -100,3 +100,70 @@ let view = new EditorView(document.body, {
   }
 })
 ```
+
+### schema
+
+schema用于约束document中的node类型，以及节点之间的嵌套关系（规定某些节点中可以包含哪些类型的节点，不可以包含哪些类型的节点）。例如schema可以规定顶级节点可以包含一个或多个blocks.
+
+**node types**
+
+在schmea中，需要为每一个用到的node定义一个type（用一个对象描述type）
+
+例如👇：
+
+```js
+const schema = new Schema({
+  nodes: {
+    doc: {content: "paragraph+"}, // schmea中至少定义一个顶级node的type，顶级node的默认名为doc
+    paragraph: {content: "text*"},
+    text: {inline: true},
+    /* ... and so on */
+  }
+})
+```
+
+上面的schema约束了一个`document`可以包含一个或多个`paragraphs`，一个`paragraph`又可以包含任意数量的`text`
+
+**content expressions**
+
+content属性表示该node可以包含的子元素
+
+content属性值是一个字符串，支持正则表达式
+
+例如：`paragraph+` 至少包含1个或多个`paragraph` `paragraph*` 可以包含0个或多个
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

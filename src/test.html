@@ -5,12 +5,80 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>JS Bin</title>
-  <style></style>
+  <style>
+    body {
+      height: 1000px;
+      border: 1px solid black;
+      cursor: move !important;
+    }
+
+    div {
+      height: 200px;
+      width: 200px;
+      background-color: pink;
+      user-select: contain;
+      cursor: move !important;
+    }
+  </style>
 </head>
 
-<body style="height: 100%;width: 100%;" contenteditable="true" >
-  <p>testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest</p>
-  <img src="https://img.alicdn.com/bao/uploaded/O1CN019QHTBp27TzcYrNEE8_!!6000000007799-0-yinhe.jpg_160x160q90.jpg_.webp" />
+<body id="editor" contenteditable="true">
+  <div class="draggable" contenteditable="false" draggable="true">
+  </div>
+  <p>
+    asdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlkasdlk
+  </p>
+  <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+    integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+  <script>
+
+    var bindDraggables = function () {
+      $('.draggable').attr("contenteditable", false);
+      $('.draggable').off('dragstart').on('dragstart', function (e) {
+        if (!e.target.id)
+          e.target.id = (new Date()).getTime();
+        e.originalEvent.dataTransfer.setData('text/html', e.target.outerHTML);
+        // console.log('started dragging');
+        $(e.target).addClass('dragged');
+      }).on('click', function () {
+        // console.log('there was a click');
+      });
+    }
+
+    $('#editor').on('dragover', function (e) {
+      e.preventDefault();
+      const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+      const sel = window.getSelection()
+      sel.removeAllRanges()
+      sel.addRange(range)
+      sel.collapseToEnd()
+    });
+
+    $('#editor').on('drop', function (e) {
+      e.preventDefault();
+      var e = e.originalEvent;
+      var content = e.dataTransfer.getData('text/html');
+      var range = null;
+      if (document.caretRangeFromPoint) { // Chrome
+        range = document.caretRangeFromPoint(e.clientX, e.clientY);
+      }
+      else if (e.rangeParent) { // Firefox
+        range = document.createRange();
+        range.setStart(e.rangeParent, e.rangeOffset);
+      }
+      var sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+      console.log('range', range)
+
+      $('#editor').get(0).focus(); // essential
+      document.execCommand('insertHTML', false, content);
+      sel.removeAllRanges();
+      bindDraggables();
+      $('.dragged').remove();
+    });
+
+    bindDraggables();
+  </script>
 </body>
 
 </html>
