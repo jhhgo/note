@@ -1,91 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>JS Bin</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover" />
+  <title>Document</title>
+  <link rel="preload" as="image"
+    href="https://pic.baike.soso.com/ugc/baikepic2/3707/20220318183211-1243608372_jpeg_410_560_36543.jpg/0_90">
+  <link rel="stylesheet" href="./lib/swiper-3.4.2.min.css">
   <style>
     body {
-      width: 100vw;
-      height: 100vh;
+      background: #ecf5fc;
+      padding: 0;
+      margin: 0;
+    }
+
+    .header {
+      height: 20vh;
+      background-color: red;
+    }
+
+    .content {
+      height: 80vh;
+      background-color: green;
     }
   </style>
 </head>
 
 <body>
-  <input type="text" required="true" maxlength="true"  />
+  <div class="header"></div>
+  <div class="content"></div>
+  <script>
+    const header = document.querySelector('.header')
+
+    header.addEventListener('click', () => {
+      window.location.href = 'http://www.baidu.com'
+    })
+    document.addEventListener('visibilitychange', () => {
+      debugger
+    })
+  </script>
 </body>
-
-<script>
-
-
-
-  // const input = document.querySelector('input')
-  // const validate = $(input).attr('validate')
-  // const value = $(input).value()
-  // Validator.addRule(value, validate.split(',')).valid()
-
-  const resultFactory = (isPass = false, errMsg = '') => {
-    return {
-      isPass,
-      errMsg
-    }
-  }
-
-  const required = 'required'
-  const maxLength = 'maxLength'
-
-  const ValidStrategies = {
-    [required](val) {
-      if (!val) return resultFactory(false, '不允许空')
-    },
-    [maxLength](val, length) {
-      length = Number(length)
-      if (val.length > length) return resultFactory(false, `长度不能大于${length}`)
-    }
-
-  }
-
-  // 
-  class Validator{
-    constructor() {
-      this.ruleExecuters = []
-    }
-
-    // Validator.addRule('123', ['required', '']).valid()
-    addRule(val, rules) {
-      this.ruleExecuters = []
-      rules.forEach(rule => {
-        const args = rule.split(':')
-        const funName = args.shift()
-        const ruleFun = ValidStrategies[funName].bind(this, val)
-        this.ruleExecuters.push({
-          fun: ruleFun,
-          args
-        })
-      })
-      return this
-    }
-
-    valid() {
-      const { ruleExecuters } = this
-      for (let i = 0; i < ruleExecuters.length; i++) {
-        const res = ruleExecuters[i].fun.apply(this, ruleExecuters[i].args)
-        if (res && !res.isPass) return res
-      }
-      return resultFactory(true)
-    }
-  }
-
-  const validator = new Validator()
-  console.log(validator.addRule('123', ['required', 'maxLength: 2']).valid())
-
-  
-
-  
-
-  let a
-</script>
 
 </html>
