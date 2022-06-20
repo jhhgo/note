@@ -403,7 +403,7 @@ inner {
   }
   .main {
     flex: 1;
-    /* 相当于flex-grow: 1; */
+    /* 相当于flex-grow: 1; flex-shrink: 1 */
   }
 </style>
 <body>
@@ -906,7 +906,7 @@ Block Formatting Context 块级格式化上下文
 
 一个元素的尺寸和位置经常受其包含块(containing block)的影响。
 
-1. 将元素的`width`、`height`等设置为百分比时，这是百分比参照的就是包含块
+1. 将元素的`width`、`height`等设置为百分比时，这时百分比参照的就是包含块
 2. 元素定位时，也是相对包含块进行偏移
 
 **如何确定包含块？**
