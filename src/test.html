@@ -12,30 +12,40 @@
   <link rel="stylesheet" href="./lib/swiper-3.4.2.min.css">
   <style>
     body {
-      margin: 0;
+      height: 10000px;
     }
 
-    .button {
+    .box {
       width: 100px;
-      height: 40px;
-      margin: 100px;
-      border: 1px solid black;
-      line-height: 40px;
-      border-radius: 8px;
-      text-align: center;
+      height: 400px;
+      overflow: auto;
+      background-color: red;
     }
-
-    .button:hover {
-      background-color: aqua;
-      transition: all .5s;
-    }
-
   </style>
 </head>
+p
 
 <body>
-  <div class="button">hover button</div>
+  <div class="box">
+    <div style="height: 100000px;"></div>
+  </div>
   <script>
+    const p1 = new Promise((resolve) => {
+      setTimeout(() => {
+        throw new Error()
+        resolve('success')
+        // ...异步操作后执行resolve
+      }, 3000)
+    })
+
+    p1.then(value => {
+      console.log(`done ${value}`)
+    }, error => {
+      console.log('jterror')
+    })
+
+    
+
   </script>
 </body>
 
